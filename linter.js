@@ -116,7 +116,6 @@ const commandsGen = function (src = defaultSrc, customConfig = false) {
 function execute (command, verbose = false) {
   exec(command, (err) => {
     if (err) {
-      console.log(`Process finished with exit code ${err.code}`)
       printLintResults(verbose)
     } else {
       console.log('Command completed with no errors!')

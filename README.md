@@ -44,7 +44,6 @@ The simplest case
 ```bash
 $ npx foliant-md-linter full-check
 
-Process finished with exit code 1
 Checked 1 files
 Found 5 critical formatting errors
 Full markdownlint log see in user/my-awesome-foliant-project/.markdownlint_slim.log

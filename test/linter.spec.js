@@ -11,7 +11,7 @@ test('First print', async () => {
   const expectedStdout = ''
   const result = await cli(['print', '-v'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
@@ -20,7 +20,7 @@ test('create-full-config', async () => {
   const result = await cli(['create-full-config'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
@@ -29,34 +29,34 @@ test('create-slim-config', async () => {
   const result = await cli(['create-slim-config'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('slim', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
       'Checked 1 files\n' +
       'Found 5 critical formatting errors\n' +
       `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n`
   const result = await cli(['slim'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('slim -c', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 2 critical formatting errors\n' +
         `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n`
   const result = await cli(['slim', '-c'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('slim -v', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -67,12 +67,12 @@ test('slim -v', async () => {
         `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n`
   const result = await cli(['slim', '-v'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('slim -v -s alt-src', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -83,12 +83,12 @@ test('slim -v -s alt-src', async () => {
         `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n`
   const result = await cli(['slim', '-v', '-s alt-src'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('styleguide', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n` +
@@ -96,12 +96,12 @@ test('styleguide', async () => {
         `Full markdownlint log see in ${cwd}/.markdownlint_full.log\n`
   const result = await cli(['styleguide'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('styleguide -v', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -114,12 +114,12 @@ test('styleguide -v', async () => {
         `Full markdownlint log see in ${cwd}/.markdownlint_full.log\n`
   const result = await cli(['styleguide', '-v'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('styleguide -s alt-src -v', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -132,12 +132,12 @@ test('styleguide -s alt-src -v', async () => {
         `Full markdownlint log see in ${cwd}/.markdownlint_full.log\n`
   const result = await cli(['styleguide', '-s alt-src', '-v'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('styleguide -s alt-src -v -c', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 2 critical formatting errors\n' +
         'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -147,12 +147,12 @@ test('styleguide -s alt-src -v -c', async () => {
         `Full markdownlint log see in ${cwd}/.markdownlint_full.log\n`
   const result = await cli(['styleguide', '-s alt-src', '-v', '-c'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('fix', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
       'Checked 1 files\n' +
       'Found 5 critical formatting errors\n' +
       `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n` +
@@ -160,12 +160,12 @@ test('fix', async () => {
       `Full markdownlint log see in ${cwd}/.markdownlint_full.log\n`
   const result = await cli(['fix'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('fix -v', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
       'Checked 1 files\n' +
       'Found 5 critical formatting errors\n' +
       'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -178,12 +178,12 @@ test('fix -v', async () => {
       `Full markdownlint log see in ${cwd}/.markdownlint_full.log\n`
   const result = await cli(['fix', '-v'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('fix -v -c', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
       'Checked 1 files\n' +
       'Found 2 critical formatting errors\n' +
       'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -193,12 +193,12 @@ test('fix -v -c', async () => {
       `Full markdownlint log see in ${cwd}/.markdownlint_full.log\n`
   const result = await cli(['fix', '-v', '-c'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('fix -v -c -s alt-src', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
       'Checked 1 files\n' +
       'Found 2 critical formatting errors\n' +
       'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -208,44 +208,44 @@ test('fix -v -c -s alt-src', async () => {
       `Full markdownlint log see in ${cwd}/.markdownlint_full.log\n`
   const result = await cli(['fix', '-v', '-c', '-s alt-src'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('urls', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Found 1 broken external links\n' +
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['urls'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('urls -v', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Found 1 broken external links\n' +
         '  [✖] https://example.co/ → Status: 0\n' +
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['urls', '-v'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('urls -v -s alt-src', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Found 1 broken external links\n' +
         '  [✖] https://example.rus/ → Status: 0\n' +
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['urls', '-v', '-s alt-src'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('full-check', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n` +
@@ -255,12 +255,12 @@ test('full-check', async () => {
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['full-check'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('full-check -v', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -276,12 +276,12 @@ test('full-check -v', async () => {
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['full-check', '-v'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('full-check -s alt-src -v', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -297,12 +297,12 @@ test('full-check -s alt-src -v', async () => {
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['full-check', '-s alt-src', '-v'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
 test('full-check -s alt-src -v -c', async () => {
-  const expectedStdout = 'Process finished with exit code 1\n' +
+  const expectedStdout = 
         'Checked 1 files\n' +
         'Found 2 critical formatting errors\n' +
         'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -315,7 +315,7 @@ test('full-check -s alt-src -v -c', async () => {
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['full-check', '-s alt-src', '-v', '-c'], '.')
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
@@ -330,7 +330,7 @@ test('print', async () => {
       `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['print'], '.', false)
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
@@ -348,7 +348,7 @@ test('print -v', async () => {
       `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['print', '-v'], '.', false)
   console.log(result)
-  expect(result.code).toBe(0)
+
   expect(result.stdout).toEqual(expectedStdout)
 })
 
