@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
-const { Command, Option } = require('commander')
+const {
+  Command,
+  Option
+} = require('commander')
 const { exec } = require('child_process')
 const path = require('path')
 const { readFileSync } = require('fs')
@@ -14,7 +17,11 @@ const markdownLinkCheckLog = '.markdownlinkcheck.log'
 const markdownLintLogs = /\.markdownlint_.*\.log/
 const defaultSrc = 'src'
 
-const execPath = path.join(__dirname, '/node_modules/.bin/')
+let execPath = path.resolve(__dirname, '../.bin/')
+
+if (fs.existsSync(path.join(__dirname, '/node_modules/.bin//markdownlint-cli2'))) {
+  execPath = path.join(__dirname, '/node_modules/.bin/')
+}
 
 function printErrors (logFile) {
   let regex

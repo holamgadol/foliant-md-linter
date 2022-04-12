@@ -5,14 +5,25 @@ const program = new Command()
 const cwd = process.cwd().toString()
 
 function createConfig (mode = 'full') {
-  const customRules = [
-    path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/indented-fence'),
-    path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
-    path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
-    path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
-    path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links')
+  let customRules
+  if (fs.existsSync(path.join(__dirname, '/node_modules/markdownlint-rules-foliant/package.json'))) {
+    customRules = [
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/indented-fence'),
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links')
+    ]
+  } else {
+    customRules = [
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/indented-fence'),
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/non-literal-fence-label'),
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/fenced-code-in-quote'),
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/typograph'),
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/validate-internal-links')
 
-  ]
+    ]
+  }
 
   const configFull = {
     MD001: true,
@@ -22,7 +33,10 @@ function createConfig (mode = 'full') {
     MD009: true,
     MD010: true,
     MD012: { maximum: 5 },
-    MD013: { line_length: 1000, heading_line_length: 80 },
+    MD013: {
+      line_length: 1000,
+      heading_line_length: 80
+    },
     MD014: true,
     MD018: true,
     MD019: true,
