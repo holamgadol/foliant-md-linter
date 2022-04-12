@@ -4,8 +4,6 @@ const fs = require('fs')
 
 const cwd = process.cwd().toString()
 
-const createTemp = execSync('yes | cp -rf \'./test/src/.\' ./src/  && yes | cp -rf \'./test/alt-src/.\' ./alt-src/').toString()
-console.log(createTemp)
 
 test('First print', async () => {
   const expectedStdout = ''

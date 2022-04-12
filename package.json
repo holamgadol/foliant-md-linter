@@ -8,7 +8,8 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "jest"
+    "prepare-test": "yes | cp -rf './test/src/.' ./src/  && yes | cp -rf './test/alt-src/.' ./alt-src/",
+    "test": "npm run prepare-test && jest"
   },
   "dependencies": {
     "commander": "^9.1.0",
