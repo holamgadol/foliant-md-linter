@@ -19,7 +19,7 @@ const defaultSrc = 'src'
 
 let execPath = path.resolve(__dirname, '../.bin/')
 
-if (fs.existsSync(path.join(__dirname, '/node_modules/.bin//markdownlint-cli2'))) {
+if (fs.existsSync(path.join(__dirname, '/node_modules/.bin/markdownlint-cli2'))) {
   execPath = path.join(__dirname, '/node_modules/.bin/')
 }
 
@@ -110,10 +110,10 @@ const commandsGen = function (src = defaultSrc, customConfig = false) {
   const commands = {}
   commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full` : 'echo "using custom config"'
   commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim` : 'echo "using custom config"'
-  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintSlimLog}`
-  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintFullLog}`
-  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}markdownlint-cli2-fix '${src}/**/*.md' &> ${markdownLintFullLog}`
-  commands.markdownlinkcheckSrc = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} &> ${markdownLinkCheckLog}`
+  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintSlimLog}`
+  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintFullLog}`
+  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix '${src}/**/*.md' &> ${markdownLintFullLog}`
+  commands.markdownlinkcheckSrc = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} &> ${markdownLinkCheckLog}`
   commands.lintSrc = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
   return {
     commands
