@@ -1,9 +1,8 @@
 const path = require('path')
-const { exec, execSync } = require('child_process')
+const { exec } = require('child_process')
 const fs = require('fs')
 
 const cwd = process.cwd().toString()
-
 
 test('First print', async () => {
   const expectedStdout = ''
