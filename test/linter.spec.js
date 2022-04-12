@@ -34,7 +34,7 @@ test('create-slim-config', async () => {
 })
 
 test('slim', async () => {
-  const expectedStdout = 
+  const expectedStdout =
       'Checked 1 files\n' +
       'Found 5 critical formatting errors\n' +
       `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n`
@@ -45,7 +45,7 @@ test('slim', async () => {
 })
 
 test('slim -c', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 2 critical formatting errors\n' +
         `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n`
@@ -56,7 +56,7 @@ test('slim -c', async () => {
 })
 
 test('slim -v', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -72,7 +72,7 @@ test('slim -v', async () => {
 })
 
 test('slim -v -s alt-src', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -88,7 +88,7 @@ test('slim -v -s alt-src', async () => {
 })
 
 test('styleguide', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n` +
@@ -101,7 +101,7 @@ test('styleguide', async () => {
 })
 
 test('styleguide -v', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -119,7 +119,7 @@ test('styleguide -v', async () => {
 })
 
 test('styleguide -s alt-src -v', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -137,7 +137,7 @@ test('styleguide -s alt-src -v', async () => {
 })
 
 test('styleguide -s alt-src -v -c', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 2 critical formatting errors\n' +
         'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -152,7 +152,7 @@ test('styleguide -s alt-src -v -c', async () => {
 })
 
 test('fix', async () => {
-  const expectedStdout = 
+  const expectedStdout =
       'Checked 1 files\n' +
       'Found 5 critical formatting errors\n' +
       `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n` +
@@ -165,7 +165,7 @@ test('fix', async () => {
 })
 
 test('fix -v', async () => {
-  const expectedStdout = 
+  const expectedStdout =
       'Checked 1 files\n' +
       'Found 5 critical formatting errors\n' +
       'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -183,7 +183,7 @@ test('fix -v', async () => {
 })
 
 test('fix -v -c', async () => {
-  const expectedStdout = 
+  const expectedStdout =
       'Checked 1 files\n' +
       'Found 2 critical formatting errors\n' +
       'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -198,7 +198,7 @@ test('fix -v -c', async () => {
 })
 
 test('fix -v -c -s alt-src', async () => {
-  const expectedStdout = 
+  const expectedStdout =
       'Checked 1 files\n' +
       'Found 2 critical formatting errors\n' +
       'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -213,7 +213,7 @@ test('fix -v -c -s alt-src', async () => {
 })
 
 test('urls', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Found 1 broken external links\n' +
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
   const result = await cli(['urls'], '.')
@@ -223,7 +223,7 @@ test('urls', async () => {
 })
 
 test('urls -v', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Found 1 broken external links\n' +
         '  [✖] https://example.co/ → Status: 0\n' +
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
@@ -234,7 +234,7 @@ test('urls -v', async () => {
 })
 
 test('urls -v -s alt-src', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Found 1 broken external links\n' +
         '  [✖] https://example.rus/ → Status: 0\n' +
         `Full markdown-link-check log see in ${cwd}/.markdownlinkcheck.log\n`
@@ -245,7 +245,7 @@ test('urls -v -s alt-src', async () => {
 })
 
 test('full-check', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         `Full markdownlint log see in ${cwd}/.markdownlint_slim.log\n` +
@@ -260,7 +260,7 @@ test('full-check', async () => {
 })
 
 test('full-check -v', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
@@ -281,7 +281,7 @@ test('full-check -v', async () => {
 })
 
 test('full-check -s alt-src -v', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 5 critical formatting errors\n' +
         'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -302,7 +302,7 @@ test('full-check -s alt-src -v', async () => {
 })
 
 test('full-check -s alt-src -v -c', async () => {
-  const expectedStdout = 
+  const expectedStdout =
         'Checked 1 files\n' +
         'Found 2 critical formatting errors\n' +
         'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
