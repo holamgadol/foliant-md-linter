@@ -3,6 +3,12 @@
   "version": "0.0.1",
   "description": "CLI tool for linting Foliant markdown sources",
   "license": "MIT",
+  "homepage": "https://github.com/holamgadol/foliant-md-linter",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holamgadol/foliant-md-linter.git"
+  },
+  "bugs": "https://github.com/holamgadol/foliant-md-linter/issues",
   "bin": {
     "foliant-md-linter": "linter.js"
   },

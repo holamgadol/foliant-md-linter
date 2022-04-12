@@ -114,8 +114,8 @@ const commandsGen = function (src = defaultSrc, customConfig = false) {
 }
 
 function execute (command, verbose = false) {
-  exec(command, (err) => {
-    if (err) {
+  exec(command, {shell: '/bin/bash'}, (err, stdout, stderror) => {
+    if (err || stderror) {
       printLintResults(verbose)
     } else {
       console.log('Command completed with no errors!')
