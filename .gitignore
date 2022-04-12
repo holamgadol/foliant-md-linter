@@ -4,5 +4,5 @@ package-lock.json
 *.jsonc
 .idea
 .DS_store
-alt-src
-src
+./alt-src
+./src
