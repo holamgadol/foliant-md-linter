@@ -1,0 +1,28 @@
+{
+  "name": "foliant-md-linter",
+  "version": "0.0.1",
+  "description": "CLI tool for linting Foliant markdown sources",
+  "license": "MIT",
+  "bin": {
+    "foliant-md-linter": "linter.js"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "jest"
+  },
+  "dependencies": {
+    "commander": "^9.1.0",
+    "markdown-link-check": "^3.10.0",
+    "markdownlint-rules-foliant": "^0.1.1",
+    "markdownlint-cli2": "^0.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.2.0",
+    "eslint-plugin-jest": "^26.1.4",
+    "jest": "^27.5.1"
+  }
+}

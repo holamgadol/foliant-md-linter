@@ -1,0 +1,8 @@
+node_modules/
+package-lock.json
+*.log
+*.jsonc
+.idea
+.DS_store
+alt-src
+src
