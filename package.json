@@ -15,21 +15,26 @@
   "scripts": {
     "lint": "eslint .",
     "prepare-test": "yes | cp -rf './test/src/.' ./src/  && yes | cp -rf './test/alt-src/.' ./alt-src/",
-    "test": "npm run prepare-test && jest"
+    "test": "npm run prepare-test && jest",
+    "prepare": "husky install",
+    "validate": "npm-run-all --parallel test lint",
+    "precommit": "npm run validate",
+    "prepush": "npm run validate"
   },
   "dependencies": {
     "commander": "^9.1.0",
     "markdown-link-check": "^3.10.0",
-    "markdownlint-rules-foliant": "^0.1.1",
-    "markdownlint-cli2": "^0.4.0"
+    "markdownlint-cli2": "^0.4.0",
+    "markdownlint-rules-foliant": "^0.1.1"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^26.1.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
-    "eslint-plugin-jest": "^26.1.4",
+    "husky": "^7.0.4",
     "jest": "^27.5.1"
   }
 }
