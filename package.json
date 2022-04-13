@@ -1,6 +1,6 @@
 {
   "name": "foliant-md-linter",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "CLI tool for linting Foliant markdown sources",
   "license": "MIT",
   "homepage": "https://github.com/holamgadol/foliant-md-linter",
@@ -17,9 +17,7 @@
     "prepare-test": "yes | cp -rf './test/src/.' ./src/  && yes | cp -rf './test/alt-src/.' ./alt-src/",
     "test": "npm run prepare-test && jest",
     "prepare": "husky install",
-    "validate": "npm-run-all --parallel test lint",
-    "precommit": "npm run validate",
-    "prepush": "npm run validate"
+    "validate": "npm run lint ; npm test"
   },
   "dependencies": {
     "commander": "^9.1.0",
