@@ -2,6 +2,13 @@
 
 Wrapper-script for running markdown linters in Foliant projects.
 
+This script uses:
+- [markdown-link-check](https://github.com/tcort/markdown-link-check)
+- [markdownlint](https://github.com/DavidAnson/markdownlint) with
+  - [markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2)
+  - [markdownlint-foliant-rules](https://github.com/holamgadol/markdownlint-foliant-rules)
+  for specific Foliant checks.
+
 ## Installation
 
 Locate your foliant project
@@ -71,4 +78,17 @@ Full markdownlint log see in user/my-awesome-foliant-project/.markdownlint_full.
 Found 1 broken external links
   [✖] https://example.co/ → Status: 0
 Full markdown-link-check log see in user/my-awesome-foliant-project/.markdownlinkcheck.log
+```
+
+If project sources are located in a folder other than _src_, then you may specify them via `-s` option
+
+```bash
+$ npx foliant-md-linter full-check -s another-sources
+```
+
+You can edit a generated `.markdownlint-cli2.jsonc` config file for your needs
+and use it for the next _markdownlint_ runs by `-c` option
+
+```bash
+$ npx foliant-md-linter full-check -c
 ```
