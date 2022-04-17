@@ -110,10 +110,10 @@ const commandsGen = function (src = defaultSrc, customConfig = false) {
   const commands = {}
   commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full` : 'echo "using custom config"'
   commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim` : 'echo "using custom config"'
-  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintSlimLog}`
-  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintFullLog}`
-  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix '${src}/**/*.md' &> ${markdownLintFullLog}`
-  commands.markdownlinkcheckSrc = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} &> ${markdownLinkCheckLog}`
+  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" > ${markdownLintSlimLog} 2>&1`
+  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} & ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" > ${markdownLintFullLog} 2>&1`
+  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} & ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" > ${markdownLintFullLog} 2>&1`
+  commands.markdownlinkcheckSrc = `forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} > ${path.join(cwd, markdownLinkCheckLog)} 2>&1"`
   commands.lintSrc = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
   return {
     commands
@@ -121,8 +121,8 @@ const commandsGen = function (src = defaultSrc, customConfig = false) {
 }
 
 function execute (command, verbose = false) {
-  exec(command, { shell: '/bin/bash' }, (err, stdout, stderror) => {
-    if (err || stderror) {
+  exec(command, { shell: 'cmd.exe' }, (err, stdout, stderror) => {
+    if (err || stderror || stdout) {
       printLintResults(verbose)
     } else {
       console.log('Command completed with no errors!')
