@@ -10,6 +10,7 @@ const { readFileSync } = require('fs')
 const fs = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
+const isWin = process.platform === 'win32'
 
 const markdownLintSlimLog = '.markdownlint_slim.log'
 const markdownLintFullLog = '.markdownlint_full.log'
@@ -106,14 +107,21 @@ const printLintResults = function (verbose = false) {
   }
 }
 
+function writeLog (logFile) {
+  return (isWin === true) ? `> ${logFile} 2>&1` : `&> ${logFile}`
+}
+
 const commandsGen = function (src = defaultSrc, customConfig = false, project = '') {
   const commands = {}
+  const and = (isWin === true) ? '&' : ';'
   commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} -p '${project}'` : 'echo "using custom config"'
   commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} -p '${project}'` : 'echo "using custom config"'
-  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintSlimLog}`
-  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintFullLog}`
-  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix '${src}/**/*.md' &> ${markdownLintFullLog}`
-  commands.markdownlinkcheckSrc = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} &> ${markdownLinkCheckLog}`
+  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
+  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
+  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
+  commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  commands.markdownlinkcheckSrcWin = `forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
+  commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
   commands.lintSrc = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
   return {
     commands
@@ -121,12 +129,13 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
 }
 
 function execute (command, verbose = false, debug = false) {
+  const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
   if (debug) {
     console.log('executed command: ')
     console.log(command)
   }
-  exec(command, { shell: '/bin/bash' }, (err, stdout, stderror) => {
-    if (err || stderror) {
+  exec(command, { shell: shell }, (err, stdout, stderror) => {
+    if (err || stderror || stdout) {
       printLintResults(verbose)
     } else {
       console.log('Command completed with no errors!')

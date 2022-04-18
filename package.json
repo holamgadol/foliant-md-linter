@@ -14,10 +14,9 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "prepare-test": "yes | cp -rf './test/src/.' ./src/  && yes | cp -rf './test/alt-src/.' ./alt-src/",
-    "test": "npm run prepare-test && jest",
+    "test": "jest",
     "prepare": "husky install",
-    "validate": "npm run lint ; npm test"
+    "validate": "npm run lint && npm test"
   },
   "dependencies": {
     "commander": "^9.1.0",
