@@ -26,3 +26,9 @@ physics–science
 ![invalid link to image](/red-circle.png)
 
 [Broken external link](https://example.co/)
+
+[absolute link to file](/another-project/subproject/article)
+
+[absolute link to file](/another-project/subproject/article#anchor)
+
+[absolute link to file](/foliant-md-linter/subproject/article)

@@ -38,8 +38,8 @@ test('create-slim-config', async () => {
 
 test('slim', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
-    'Found 5 critical formatting errors\n' +
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`
   const result = await cli(['slim'], '.')
   console.log(result)
@@ -49,7 +49,7 @@ test('slim', async () => {
 
 test('slim -c', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
+    'Checked 2 files\n' +
     'Found 2 critical formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`
   const result = await cli(['slim', '-c'], '.')
@@ -60,13 +60,15 @@ test('slim -c', async () => {
 
 test('slim -v', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
-    'Found 5 critical formatting errors\n' +
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
     'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
+    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n' +
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`
   const result = await cli(['slim', '-v'], '.')
   console.log(result)
@@ -90,12 +92,30 @@ test('slim -v -s alt-src', async () => {
   expect(result.stdout).toEqual(expectedStdout)
 })
 
+test('slim -v -p another-project', async () => {
+  const expectedStdout =
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
+    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
+    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
+    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
+    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
+    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n' +
+    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`
+  const result = await cli(['slim', '-v', '-p another-project'], '.')
+  console.log(result)
+
+  expect(result.stdout).toEqual(expectedStdout)
+})
+
 test('styleguide', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
-    'Found 5 critical formatting errors\n' +
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 8 styleguide and formatting errors\n' +
+    'Found 10 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
   const result = await cli(['styleguide'], '.')
   console.log(result)
@@ -105,17 +125,39 @@ test('styleguide', async () => {
 
 test('styleguide -v', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
-    'Found 5 critical formatting errors\n' +
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
     'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
+    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n' +
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 8 styleguide and formatting errors\n' +
+    'Found 10 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
   const result = await cli(['styleguide', '-v'], '.')
+  console.log(result)
+
+  expect(result.stdout).toEqual(expectedStdout)
+})
+
+test('styleguide -v -p another-project', async () => {
+  const expectedStdout =
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
+    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
+    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
+    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
+    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
+    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n' +
+    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    'Found 10 styleguide and formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+  const result = await cli(['styleguide', '-v', '-p another-project'], '.')
   console.log(result)
 
   expect(result.stdout).toEqual(expectedStdout)
@@ -156,10 +198,10 @@ test('styleguide -s alt-src -v -c', async () => {
 
 test('fix', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
-    'Found 5 critical formatting errors\n' +
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 6 styleguide and formatting errors\n' +
+    'Found 8 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
   const result = await cli(['fix'], '.')
   console.log(result)
@@ -169,15 +211,17 @@ test('fix', async () => {
 
 test('fix -v', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
-    'Found 5 critical formatting errors\n' +
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
     'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
+    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n' +
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 6 styleguide and formatting errors\n' +
+    'Found 8 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
   const result = await cli(['fix', '-v'], '.')
   console.log(result)
@@ -185,9 +229,29 @@ test('fix -v', async () => {
   expect(result.stdout).toEqual(expectedStdout)
 })
 
+test('fix -v -p another-project', async () => {
+  const expectedStdout =
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
+    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
+    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
+    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
+    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
+    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n' +
+    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    'Found 8 styleguide and formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+  const result = await cli(['fix', '-v', '-p another-project'], '.')
+  console.log(result)
+
+  expect(result.stdout).toEqual(expectedStdout)
+})
+
 test('fix -v -c', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
+    'Checked 2 files\n' +
     'Found 2 critical formatting errors\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:5 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n' +
@@ -249,10 +313,10 @@ test('urls -v -s alt-src', async () => {
 
 test('full-check', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
-    'Found 5 critical formatting errors\n' +
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 6 styleguide and formatting errors\n' +
+    'Found 8 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
     'Found 1 broken external links\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
@@ -264,20 +328,45 @@ test('full-check', async () => {
 
 test('full-check -v', async () => {
   const expectedStdout =
-    'Checked 1 files\n' +
-    'Found 5 critical formatting errors\n' +
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
     'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
+    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n' +
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 6 styleguide and formatting errors\n' +
+    'Found 8 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
     'Found 1 broken external links\n' +
     '  [✖] https://example.co/ → Status: 0\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['full-check', '-v'], '.')
+  console.log(result)
+
+  expect(result.stdout).toEqual(expectedStdout)
+})
+
+test('full-check -v -p another-project', async () => {
+  const expectedStdout =
+    'Checked 2 files\n' +
+    'Found 7 critical formatting errors\n' +
+    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
+    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
+    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
+    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
+    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n' +
+    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    'Found 8 styleguide and formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    'Found 1 broken external links\n' +
+    '  [✖] https://example.co/ → Status: 0\n' +
+    `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
+  const result = await cli(['full-check', '-v', '-p another-project'], '.')
   console.log(result)
 
   expect(result.stdout).toEqual(expectedStdout)
