@@ -31,18 +31,23 @@ Run _foliant-md-linter_ from the project root with following commands and option
     - `-v`, `--verbose` Print full linting results (default: false)
     - `-s`, `--source <path-to-sources>` specify source directory (default: _src_)
     - `-c`, `--config` Do not create a new markdownlint config file and use default or one in root directory instead (default: false)
+    - `-p`, `--project <project-name>` specify project name
+    - `-d`, `--debug` print executing command (default: false)
 - `urls` Validate external links with markdown-link-check
-    - `-v`, `-s`
+    - `-v`, `-s`, `-d`
 - `styleguide` Check for styleguide adherence with markdownlint
-    - `-v`, `-s`, `-c`
+    - `-v`, `-s`, `-c`, `-p`, `-d`
 - `slim` Check for critical errors with markdownlint
-  - `-v`, `-s`, `-c`
+    - `-v`, `-s`, `-c`, `-p`, `-d`
 - `fix` Fix formatting errors with markdownlint
-  - `-v`, `-s`, `-c`
+    - `-v`, `-s`, `-c`, `-p`, `-d`
 - `print` Print linting results
     - `-v`
 - `create-full-config` Create markdownlint config for styleguide adherence
+    - `-s`, `-p`, `-d`
 - `create-slim-config` Create markdownlint config for critical errors check
+    - `-s`, `-p`, `-d`
+
 
 ### Examples
 
@@ -84,6 +89,13 @@ If project sources are located in a folder other than _src_, then you may specif
 
 ```bash
 $ npx foliant-md-linter full-check -s another-sources
+```
+
+Sometimes, the project directory and the project name could be different, especially inside docker containers.
+You have an option to specify the project name to validate absolute links properly
+
+```bash
+$ npx foliant-md-linter full-check -p project-name
 ```
 
 You can edit a generated `.markdownlint-cli2.jsonc` config file for your needs

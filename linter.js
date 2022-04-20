@@ -10,6 +10,7 @@ const { readFileSync } = require('fs')
 const fs = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
+const isWin = process.platform === 'win32'
 
 const markdownLintSlimLog = '.markdownlint_slim.log'
 const markdownLintFullLog = '.markdownlint_full.log'
@@ -106,23 +107,35 @@ const printLintResults = function (verbose = false) {
   }
 }
 
-const commandsGen = function (src = defaultSrc, customConfig = false) {
+function writeLog (logFile) {
+  return (isWin === true) ? `>> ${logFile} 2>&1` : `&> ${logFile}`
+}
+
+const commandsGen = function (src = defaultSrc, customConfig = false, project = '') {
   const commands = {}
-  commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full` : 'echo "using custom config"'
-  commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim` : 'echo "using custom config"'
-  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintSlimLog}`
-  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 '${src}/**/*.md' &> ${markdownLintFullLog}`
-  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ; ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix '${src}/**/*.md' &> ${markdownLintFullLog}`
-  commands.markdownlinkcheckSrc = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} &> ${markdownLinkCheckLog}`
+  const and = (isWin === true) ? '&' : ';'
+  commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} -p "${project}"` : 'echo "using custom config"'
+  commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} -p "${project}"` : 'echo "using custom config"'
+  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
+  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
+  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
+  commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
+  commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
   commands.lintSrc = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
   return {
     commands
   }
 }
 
-function execute (command, verbose = false) {
-  exec(command, { shell: '/bin/bash' }, (err, stdout, stderror) => {
-    if (err || stderror) {
+function execute (command, verbose = false, debug = false) {
+  const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
+  if (debug) {
+    console.log('executed command: ')
+    console.log(command)
+  }
+  exec(command, { shell: shell }, (err, stdout, stderror) => {
+    if (err || stderror || stdout) {
       printLintResults(verbose)
     } else {
       console.log('Command completed with no errors!')
@@ -133,6 +146,8 @@ function execute (command, verbose = false) {
 const verboseOption = new Option('-v, --verbose', 'Print full linting results').default(false)
 const sourceOption = new Option('-s, --source <path-to-sources>', 'source directory').default(defaultSrc)
 const configOption = new Option('-c, --config', 'use custom markdownlint config').default(false)
+const projectOption = new Option('-p, --project <project-name>', 'project name').default('')
+const debugOption = new Option('-d, --debug', 'print executing command').default(false)
 
 program
   .name('foliant-md-linter')
@@ -144,15 +159,18 @@ program.command('full-check')
   .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(configOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config).commands.lintSrc, options.verbose)
+    execute(commandsGen(options.source, options.config, options.project).commands.lintSrc, options.verbose, options.debug)
   })
 program.command('urls')
   .description('Validate external links with markdown-link-check')
   .addOption(verboseOption)
   .addOption(sourceOption)
+  .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config).commands.markdownlinkcheckSrc, options.verbose)
+    execute(commandsGen(options.source, options.config).commands.markdownlinkcheckSrc, options.verbose, options.debug)
   })
 
 program.command('styleguide')
@@ -160,8 +178,10 @@ program.command('styleguide')
   .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(configOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config).commands.markdownlintSrcFull, options.verbose)
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFull, options.verbose, options.debug)
   })
 
 program.command('slim')
@@ -169,8 +189,10 @@ program.command('slim')
   .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(configOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config).commands.markdownlintSrcSlim, options.verbose)
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcSlim, options.verbose, options.debug)
   })
 
 program.command('fix')
@@ -178,8 +200,10 @@ program.command('fix')
   .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(configOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config).commands.markdownlintSrcFix, options.verbose)
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFix, options.verbose, options.debug)
   })
 
 program.command('print')
@@ -191,14 +215,20 @@ program.command('print')
 
 program.command('create-full-config')
   .description('Create full markdownlint config')
-  .action(() => {
-    execute(commandsGen().commands.createFullMarkdownlintConfig)
+  .addOption(sourceOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
+  .action((options) => {
+    execute(commandsGen(options.source, options.config, options.project).commands.createFullMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.command('create-slim-config')
   .description('Create slim markdownlint config')
-  .action(() => {
-    execute(commandsGen().commands.createSlimMarkdownlintConfig)
+  .addOption(sourceOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
+  .action((options) => {
+    execute(commandsGen(options.source, options.config, options.project).commands.createSlimMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.parse()

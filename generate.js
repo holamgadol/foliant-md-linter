@@ -1,10 +1,12 @@
+#!/usr/bin/env node
+
 const { Command } = require('commander')
 const path = require('path')
 const fs = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
 
-function createConfig (mode = 'full') {
+function createConfig (mode = 'full', source = '', project = '') {
   let customRules
   if (fs.existsSync(path.join(__dirname, '/node_modules/markdownlint-rules-foliant/package.json'))) {
     customRules = [
@@ -66,7 +68,10 @@ function createConfig (mode = 'full') {
     'non-literal-fence-label': true,
     'fenced-code-in-quote': true,
     typograph: true,
-    'validate-internal-links': true
+    'validate-internal-links': {
+      src: source.length === 0 ? undefined : source,
+      project: project.length === 0 ? undefined : project
+    }
   }
 
   const configSlim = {
@@ -108,7 +113,10 @@ function createConfig (mode = 'full') {
     'non-literal-fence-label': true,
     'fenced-code-in-quote': true,
     typograph: false,
-    'validate-internal-links': true
+    'validate-internal-links': {
+      src: source.length === 0 ? undefined : source,
+      project: project.length === 0 ? undefined : project
+    }
   }
 
   let config
@@ -132,10 +140,10 @@ program
   .description('script for generating .markdownlint-cli2.jsonc in foliant-project root')
   .version('0.0.1')
   .option('-m, --mode <mode>', 'full, slim or default config', 'full')
+  .option('-s, --source <source>', 'relative path to source directory', '')
+  .option('-p, --project <project>', 'project name', '')
 
 program.parse()
 
 const options = program.opts()
-createConfig(options.mode)
-
-// createConfig(`slim`)
+createConfig(options.mode, options.source, options.project)
