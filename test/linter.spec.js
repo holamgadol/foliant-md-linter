@@ -7,6 +7,7 @@ const fs = require('fs')
 
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
+jest.setTimeout(10000)
 
 execSync((isWin === true ? 'xcopy test\\src src /E/S/I/C/Y  && xcopy test\\alt-src alt-src /E/S/I/C/Y' : 'yes | cp -rf \'./test/src/.\' ./src/ && yes | cp -rf \'./test/alt-src/.\' ./alt-src/'))
 

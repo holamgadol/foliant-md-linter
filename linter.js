@@ -108,19 +108,19 @@ const printLintResults = function (verbose = false) {
 }
 
 function writeLog (logFile) {
-  return (isWin === true) ? `> ${logFile} 2>&1` : `&> ${logFile}`
+  return (isWin === true) ? `>> ${logFile} 2>&1` : `&> ${logFile}`
 }
 
 const commandsGen = function (src = defaultSrc, customConfig = false, project = '') {
   const commands = {}
   const and = (isWin === true) ? '&' : ';'
-  commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} -p '${project}'` : 'echo "using custom config"'
-  commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} -p '${project}'` : 'echo "using custom config"'
+  commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} -p "${project}"` : 'echo "using custom config"'
+  commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} -p "${project}"` : 'echo "using custom config"'
   commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
   commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
   commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
   commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
-  commands.markdownlinkcheckSrcWin = `forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
+  commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
   commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
   commands.lintSrc = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
   return {

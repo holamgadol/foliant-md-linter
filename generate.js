@@ -69,8 +69,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     'fenced-code-in-quote': true,
     typograph: true,
     'validate-internal-links': {
-      src: source === '' ? undefined : source,
-      project: project === '' ? undefined : project
+      src: source.length === 0 ? undefined : source,
+      project: project.length === 0 ? undefined : project
     }
   }
 
@@ -114,8 +114,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     'fenced-code-in-quote': true,
     typograph: false,
     'validate-internal-links': {
-      src: source === '' ? undefined : source,
-      project: project === '' ? undefined : project
+      src: source.length === 0 ? undefined : source,
+      project: project.length === 0 ? undefined : project
     }
   }
 
