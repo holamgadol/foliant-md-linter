@@ -26,18 +26,33 @@ if (fs.existsSync(path.join(__dirname, '/node_modules/.bin/markdownlint-cli2')))
 
 function printErrors (logFile) {
   let regex
+  let file
+  let fileTmp
+  let fileLink
   if (logFile.match(markdownLintLogs)) {
     regex = /^(?!Finding: |Linting: |Summary: |markdownlint-cli2| ).+/gm
   } else {
     regex = /^\s*\[✖].* Status:/gm
   }
+  const linkCheckFile = /^FILE: (.*)$/
   try {
     const text = readFileSync(logFile).toString('utf-8').split(/\r?\n/)
     text.forEach((line) => {
+      if (line.match(linkCheckFile)) {
+        fileLink = line.match(linkCheckFile)[0]
+      }
       if (line.match(regex)) {
+        file = line.split(':')[0]
+        if (fileTmp !== file && logFile.match(markdownLintLogs)) {
+          fileTmp = file
+          console.log(`\n${'-'.repeat(80)}\n\nFILE: ${fileTmp}\n`)
+        } else if (!logFile.match(markdownLintLogs)) {
+          console.log(`\n${'-'.repeat(80)}\n\n${fileLink}\n`)
+        }
         console.log(line)
       }
     })
+    console.log()
   } catch (err) {
 
   }
@@ -83,7 +98,7 @@ const printLintResults = function (verbose = false) {
     if (verbose) {
       printErrors(markdownlintSlim)
     }
-    console.log(`Full markdownlint log see in ${markdownlintSlim}`)
+    console.log(`Full markdownlint log see in ${markdownlintSlim}\n`)
   }
 
   const markdownlintFull = path.resolve(cwd, markdownLintFullLog)
@@ -91,7 +106,7 @@ const printLintResults = function (verbose = false) {
 
   if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
     console.log(`Found ${markdownLintErrorsCount} styleguide and formatting errors`)
-    console.log(`Full markdownlint log see in ${markdownlintFull}`)
+    console.log(`Full markdownlint log see in ${markdownlintFull}\n`)
   }
 
   const markdownLinkCheckErrors = /ERROR: (\d+) dead links found!/g
