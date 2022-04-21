@@ -18,6 +18,14 @@ function linkCheckFilePrint (file) {
   return file
 }
 
+function linuxSwapString (originalString, linuxString) {
+  if (process.platform === 'linux') {
+    return linuxString
+  } else {
+    return originalString
+  }
+}
+
 execSync((isWin === true ? 'xcopy test\\src src /E/S/I/C/Y  && xcopy test\\alt-src alt-src /E/S/I/C/Y' : 'yes | cp -rf \'./test/src/.\' ./src/ && yes | cp -rf \'./test/alt-src/.\' ./alt-src/'))
 
 test('First print', async () => {
@@ -432,15 +440,15 @@ test('urls -v', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    `FILE: ${linkCheckFilePrint('src//linter-test-A.md')}\n` +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n` +
     '\n' +
-    '  [✖] https://example.co/ → Status: 0\n' +
+    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n` +
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    `FILE: ${linkCheckFilePrint('src//subproject/article.md')}\n` +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n` +
     '\n' +
-    '  [✖] https://example.coms/ → Status: 0\n' +
+    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n` +
     '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['urls', '-v'], '.')
@@ -515,15 +523,15 @@ test('full-check -v', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    `FILE: ${linkCheckFilePrint('src//linter-test-A.md')}\n` +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n` +
     '\n' +
-    '  [✖] https://example.co/ → Status: 0\n' +
+    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n` +
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    `FILE: ${linkCheckFilePrint('src//subproject/article.md')}\n` +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n` +
     '\n' +
-    '  [✖] https://example.coms/ → Status: 0\n' +
+    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n` +
     '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['full-check', '-v'], '.')
@@ -564,15 +572,15 @@ test('full-check -v -p another-project', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    `FILE: ${linkCheckFilePrint('src//linter-test-A.md')}\n` +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n` +
     '\n' +
-    '  [✖] https://example.co/ → Status: 0\n' +
+    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n` +
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    `FILE: ${linkCheckFilePrint('src//subproject/article.md')}\n` +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n` +
     '\n' +
-    '  [✖] https://example.coms/ → Status: 0\n' +
+    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n` +
     '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['full-check', '-v', '-p another-project'], '.')
