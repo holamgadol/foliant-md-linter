@@ -564,7 +564,7 @@ test('full-check -v -p another-project', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: src//linter-test-A.md\n' +
+    `FILE: ${linkCheckFilePrint('src//linter-test-A.md')}\n` +
     '\n' +
     '  [✖] https://example.co/ → Status: 0\n' +
     '\n' +
