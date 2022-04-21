@@ -9,6 +9,15 @@ const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
 jest.setTimeout(10000)
 
+function linkCheckFilePrint (file) {
+  if (process.platform === 'win32') {
+    file = path.posix.basename(file)
+  } else if (process.platform === 'linux') {
+    file = file.replace('//', '/')
+  }
+  return file
+}
+
 execSync((isWin === true ? 'xcopy test\\src src /E/S/I/C/Y  && xcopy test\\alt-src alt-src /E/S/I/C/Y' : 'yes | cp -rf \'./test/src/.\' ./src/ && yes | cp -rf \'./test/alt-src/.\' ./alt-src/'))
 
 test('First print', async () => {
@@ -423,13 +432,13 @@ test('urls -v', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: src//linter-test-A.md\n' +
+    `FILE: ${linkCheckFilePrint('src//linter-test-A.md')}\n` +
     '\n' +
     '  [✖] https://example.co/ → Status: 0\n' +
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: src//subproject/article.md\n' +
+    `FILE: ${linkCheckFilePrint('src//subproject/article.md')}\n` +
     '\n' +
     '  [✖] https://example.coms/ → Status: 0\n' +
     '\n' +
@@ -446,7 +455,7 @@ test('urls -v -s alt-src', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: alt-src//linter-test-B.md\n' +
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n` +
     '\n' +
     '  [✖] https://example.rus/ → Status: 0\n' +
     '\n' +
@@ -506,13 +515,13 @@ test('full-check -v', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: src//linter-test-A.md\n' +
+    `FILE: ${linkCheckFilePrint('src//linter-test-A.md')}\n` +
     '\n' +
     '  [✖] https://example.co/ → Status: 0\n' +
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: src//subproject/article.md\n' +
+    `FILE: ${linkCheckFilePrint('src//subproject/article.md')}\n` +
     '\n' +
     '  [✖] https://example.coms/ → Status: 0\n' +
     '\n' +
@@ -561,7 +570,7 @@ test('full-check -v -p another-project', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: src//subproject/article.md\n' +
+    `FILE: ${linkCheckFilePrint('src//subproject/article.md')}\n` +
     '\n' +
     '  [✖] https://example.coms/ → Status: 0\n' +
     '\n' +
@@ -596,7 +605,7 @@ test('full-check -s alt-src -v', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: alt-src//linter-test-B.md\n' +
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n` +
     '\n' +
     '  [✖] https://example.rus/ → Status: 0\n' +
     '\n' +
@@ -628,7 +637,7 @@ test('full-check -s alt-src -v -c', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: alt-src//linter-test-B.md\n' +
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n` +
     '\n' +
     '  [✖] https://example.rus/ → Status: 0\n' +
     '\n' +
@@ -677,7 +686,7 @@ test('print -v', async () => {
     '\n' +
     '--------------------------------------------------------------------------------\n' +
     '\n' +
-    'FILE: alt-src//linter-test-B.md\n' +
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n` +
     '\n' +
     '  [✖] https://example.rus/ → Status: 0\n' +
     '\n' +
