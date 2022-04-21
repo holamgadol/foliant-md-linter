@@ -15,6 +15,7 @@
   "scripts": {
     "lint": "eslint .",
     "test": "jest",
+    "mini-test": "./linter.js print -v",
     "prepare": "husky install",
     "validate": "npm run lint && npm test"
   },

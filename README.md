@@ -56,13 +56,16 @@ The simplest case
 ```bash
 $ npx foliant-md-linter full-check
 
-Checked 1 files
-Found 5 critical formatting errors
-Full markdownlint log see in user/my-awesome-foliant-project/.markdownlint_slim.log
-Found 6 styleguide and formatting errors
-Full markdownlint log see in user/my-awesome-foliant-project/.markdownlint_full.log
-Found 1 broken external links
-Full markdown-link-check log see in user/my-awesome-foliant-project/.markdownlinkcheck.log
+Checked 2 files
+Found 8 critical formatting errors
+Full markdownlint log see in /Users/user/github/foliant-md-linter/.markdownlint_slim.log
+
+Found 9 styleguide and formatting errors
+Full markdownlint log see in /Users/user/github/foliant-md-linter/.markdownlint_full.log
+
+Found 2 broken external links
+Full markdown-link-check log see in /Users/user/github/foliant-md-linter/.markdownlinkcheck.log
+
 ```
 
 If you want more detailed output
@@ -70,19 +73,47 @@ If you want more detailed output
 ```bash
 $ npx foliant-md-linter full-check -v
 
-Checked 1 files
-Found 5 critical formatting errors
-src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3] 
-src/linter-test-A.md:7 indented-fence Fenced code shouldn't be indented by 1 to 3 spaces [Context: \"   ```bash\"]
+Checked 2 files
+Found 8 critical formatting errors
+
+--------------------------------------------------------------------------------
+
+FILE: src/linter-test-A.md
+
+src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]
+src/linter-test-A.md:7 indented-fence Fenced code shouldn't be indented by 1 to 3 spaces [Context: "   ```bash"]
 src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block
 src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn't be in quote
 src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]
-Full markdownlint log see in user/my-awesome-foliant-project/.markdownlint_slim.log
-Found 6 styleguide and formatting errors
-Full markdownlint log see in user/my-awesome-foliant-project/.markdownlint_full.log
-Found 1 broken external links
+src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]
+src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]
+
+--------------------------------------------------------------------------------
+
+FILE: src/subproject/article.md
+
+src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]
+
+Full markdownlint log see in /Users/user/github/foliant-md-linter/.markdownlint_slim.log
+
+Found 9 styleguide and formatting errors
+Full markdownlint log see in /Users/user/github/foliant-md-linter/.markdownlint_full.log
+
+Found 2 broken external links
+
+--------------------------------------------------------------------------------
+
+FILE: src//linter-test-A.md
+
   [✖] https://example.co/ → Status: 0
-Full markdown-link-check log see in user/my-awesome-foliant-project/.markdownlinkcheck.log
+
+--------------------------------------------------------------------------------
+
+FILE: src//subproject/article.md
+
+  [✖] https://example.coms/ → Status: 0
+
+Full markdown-link-check log see in /Users/user/github/foliant-md-linter/.markdownlinkcheck.log
 ```
 
 If project sources are located in a folder other than _src_, then you may specify them via `-s` option

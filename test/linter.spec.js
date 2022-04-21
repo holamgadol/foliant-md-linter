@@ -9,6 +9,23 @@ const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
 jest.setTimeout(10000)
 
+function linkCheckFilePrint (file) {
+  if (process.platform === 'win32') {
+    file = path.posix.basename(file)
+  } else if (process.platform === 'linux') {
+    file = file.replace('//', '/')
+  }
+  return file
+}
+
+function linuxSwapString (originalString, linuxString) {
+  if (process.platform === 'linux') {
+    return linuxString
+  } else {
+    return originalString
+  }
+}
+
 execSync((isWin === true ? 'xcopy test\\src src /E/S/I/C/Y  && xcopy test\\alt-src alt-src /E/S/I/C/Y' : 'yes | cp -rf \'./test/src/.\' ./src/ && yes | cp -rf \'./test/alt-src/.\' ./alt-src/'))
 
 test('First print', async () => {
@@ -40,8 +57,9 @@ test('create-slim-config', async () => {
 test('slim', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`
+    'Found 8 critical formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n'
   const result = await cli(['slim'], '.')
   console.log(result)
 
@@ -52,7 +70,8 @@ test('slim -c', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
     'Found 2 critical formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n'
   const result = await cli(['slim', '-c'], '.')
   console.log(result)
 
@@ -62,7 +81,12 @@ test('slim -c', async () => {
 test('slim -v', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/linter-test-A.md\n' +
+    '\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -70,7 +94,15 @@ test('slim -v', async () => {
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n' +
     'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/subproject/article.md\n' +
+    '\n' +
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n' +
+    '\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n'
   const result = await cli(['slim', '-v'], '.')
   console.log(result)
 
@@ -81,12 +113,19 @@ test('slim -v -s alt-src', async () => {
   const expectedStdout =
     'Checked 1 files\n' +
     'Found 5 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: alt-src/linter-test-B.md\n' +
+    '\n' +
     'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n' +
     'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'alt-src/linter-test-B.md:16 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
     'alt-src/linter-test-B.md:20 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'alt-src/linter-test-B.md:24 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`
+    '\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n'
   const result = await cli(['slim', '-v', '-s alt-src'], '.')
   console.log(result)
 
@@ -96,7 +135,12 @@ test('slim -v -s alt-src', async () => {
 test('slim -v -p another-project', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/linter-test-A.md\n' +
+    '\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -104,7 +148,15 @@ test('slim -v -p another-project', async () => {
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n' +
     'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/subproject/article.md\n' +
+    '\n' +
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n' +
+    '\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n'
   const result = await cli(['slim', '-v', '-p another-project'], '.')
   console.log(result)
 
@@ -114,10 +166,12 @@ test('slim -v -p another-project', async () => {
 test('styleguide', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 10 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    '\n' +
+    'Found 11 styleguide and formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['styleguide'], '.')
   console.log(result)
 
@@ -127,7 +181,12 @@ test('styleguide', async () => {
 test('styleguide -v', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/linter-test-A.md\n' +
+    '\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -135,9 +194,18 @@ test('styleguide -v', async () => {
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n' +
     'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/subproject/article.md\n' +
+    '\n' +
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 10 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    '\n' +
+    'Found 11 styleguide and formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['styleguide', '-v'], '.')
   console.log(result)
 
@@ -147,7 +215,12 @@ test('styleguide -v', async () => {
 test('styleguide -v -p another-project', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/linter-test-A.md\n' +
+    '\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -155,9 +228,18 @@ test('styleguide -v -p another-project', async () => {
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n' +
     'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/subproject/article.md\n' +
+    '\n' +
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 10 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    '\n' +
+    'Found 11 styleguide and formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['styleguide', '-v', '-p another-project'], '.')
   console.log(result)
 
@@ -168,14 +250,22 @@ test('styleguide -s alt-src -v', async () => {
   const expectedStdout =
     'Checked 1 files\n' +
     'Found 5 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: alt-src/linter-test-B.md\n' +
+    '\n' +
     'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n' +
     'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'alt-src/linter-test-B.md:16 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
     'alt-src/linter-test-B.md:20 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'alt-src/linter-test-B.md:24 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n' +
     'Found 8 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['styleguide', '-s alt-src', '-v'], '.')
   console.log(result)
 
@@ -186,11 +276,19 @@ test('styleguide -s alt-src -v -c', async () => {
   const expectedStdout =
     'Checked 1 files\n' +
     'Found 2 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: alt-src/linter-test-B.md\n' +
+    '\n' +
     'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n' +
     'Found 2 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['styleguide', '-s alt-src', '-v', '-c'], '.')
   console.log(result)
 
@@ -200,10 +298,12 @@ test('styleguide -s alt-src -v -c', async () => {
 test('fix', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 8 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    '\n' +
+    'Found 9 styleguide and formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['fix'], '.')
   console.log(result)
 
@@ -213,7 +313,12 @@ test('fix', async () => {
 test('fix -v', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/linter-test-A.md\n' +
+    '\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -221,9 +326,18 @@ test('fix -v', async () => {
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n' +
     'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/subproject/article.md\n' +
+    '\n' +
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 8 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    '\n' +
+    'Found 9 styleguide and formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['fix', '-v'], '.')
   console.log(result)
 
@@ -233,7 +347,12 @@ test('fix -v', async () => {
 test('fix -v -p another-project', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/linter-test-A.md\n' +
+    '\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -241,9 +360,18 @@ test('fix -v -p another-project', async () => {
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n' +
     'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/subproject/article.md\n' +
+    '\n' +
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 8 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    '\n' +
+    'Found 9 styleguide and formatting errors\n' +
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['fix', '-v', '-p another-project'], '.')
   console.log(result)
 
@@ -254,11 +382,19 @@ test('fix -v -c', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
     'Found 2 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/linter-test-A.md\n' +
+    '\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:5 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n' +
     'Found 2 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['fix', '-v', '-c'], '.')
   console.log(result)
 
@@ -269,11 +405,19 @@ test('fix -v -c -s alt-src', async () => {
   const expectedStdout =
     'Checked 1 files\n' +
     'Found 2 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: alt-src/linter-test-B.md\n' +
+    '\n' +
     'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n' +
     'Found 2 styleguide and formatting errors\n' +
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n'
   const result = await cli(['fix', '-v', '-c', '-s alt-src'], '.')
   console.log(result)
 
@@ -282,7 +426,7 @@ test('fix -v -c -s alt-src', async () => {
 
 test('urls', async () => {
   const expectedStdout =
-    'Found 1 broken external links\n' +
+    'Found 2 broken external links\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['urls'], '.')
   console.log(result)
@@ -292,8 +436,20 @@ test('urls', async () => {
 
 test('urls -v', async () => {
   const expectedStdout =
-    'Found 1 broken external links\n' +
-    '  [✖] https://example.co/ → Status: 0\n' +
+    'Found 2 broken external links\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n` +
+    '\n' +
+    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n` +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n` +
+    '\n' +
+    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n` +
+    '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['urls', '-v'], '.')
   console.log(result)
@@ -304,7 +460,13 @@ test('urls -v', async () => {
 test('urls -v -s alt-src', async () => {
   const expectedStdout =
     'Found 1 broken external links\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n` +
+    '\n' +
     '  [✖] https://example.rus/ → Status: 0\n' +
+    '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['urls', '-v', '-s alt-src'], '.')
   console.log(result)
@@ -315,11 +477,13 @@ test('urls -v -s alt-src', async () => {
 test('full-check', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 8 styleguide and formatting errors\n' +
+    '\n' +
+    'Found 9 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
-    'Found 1 broken external links\n' +
+    '\n' +
+    'Found 2 broken external links\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['full-check'], '.')
   console.log(result)
@@ -330,7 +494,12 @@ test('full-check', async () => {
 test('full-check -v', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/linter-test-A.md\n' +
+    '\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -338,11 +507,32 @@ test('full-check -v', async () => {
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n' +
     'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/subproject/article.md\n' +
+    '\n' +
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 8 styleguide and formatting errors\n' +
+    '\n' +
+    'Found 9 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
-    'Found 1 broken external links\n' +
-    '  [✖] https://example.co/ → Status: 0\n' +
+    '\n' +
+    'Found 2 broken external links\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n` +
+    '\n' +
+    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n` +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n` +
+    '\n' +
+    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n` +
+    '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['full-check', '-v'], '.')
   console.log(result)
@@ -353,7 +543,12 @@ test('full-check -v', async () => {
 test('full-check -v -p another-project', async () => {
   const expectedStdout =
     'Checked 2 files\n' +
-    'Found 7 critical formatting errors\n' +
+    'Found 8 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/linter-test-A.md\n' +
+    '\n' +
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
     'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n' +
@@ -361,11 +556,32 @@ test('full-check -v -p another-project', async () => {
     'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n' +
     'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: src/subproject/article.md\n' +
+    '\n' +
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
-    'Found 8 styleguide and formatting errors\n' +
+    '\n' +
+    'Found 9 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
-    'Found 1 broken external links\n' +
-    '  [✖] https://example.co/ → Status: 0\n' +
+    '\n' +
+    'Found 2 broken external links\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n` +
+    '\n' +
+    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n` +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n` +
+    '\n' +
+    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n` +
+    '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['full-check', '-v', '-p another-project'], '.')
   console.log(result)
@@ -377,16 +593,30 @@ test('full-check -s alt-src -v', async () => {
   const expectedStdout =
     'Checked 1 files\n' +
     'Found 5 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: alt-src/linter-test-B.md\n' +
+    '\n' +
     'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n' +
     'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'alt-src/linter-test-B.md:16 fenced-code-in-quote Fenced code shouldn\'t be in quote\n' +
     'alt-src/linter-test-B.md:20 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n' +
     'alt-src/linter-test-B.md:24 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n' +
     'Found 8 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n' +
     'Found 1 broken external links\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n` +
+    '\n' +
     '  [✖] https://example.rus/ → Status: 0\n' +
+    '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['full-check', '-s alt-src', '-v'], '.')
   console.log(result)
@@ -398,13 +628,27 @@ test('full-check -s alt-src -v -c', async () => {
   const expectedStdout =
     'Checked 1 files\n' +
     'Found 2 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: alt-src/linter-test-B.md\n' +
+    '\n' +
     'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n' +
     'Found 2 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n' +
     'Found 1 broken external links\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n` +
+    '\n' +
     '  [✖] https://example.rus/ → Status: 0\n' +
+    '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['full-check', '-s alt-src', '-v', '-c'], '.')
   console.log(result)
@@ -417,8 +661,10 @@ test('print', async () => {
     'Checked 1 files\n' +
     'Found 2 critical formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n' +
     'Found 2 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n' +
     'Found 1 broken external links\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['print'], '.', false)
@@ -431,13 +677,27 @@ test('print -v', async () => {
   const expectedStdout =
     'Checked 1 files\n' +
     'Found 2 critical formatting errors\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    'FILE: alt-src/linter-test-B.md\n' +
+    '\n' +
     'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n' +
     'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n' +
+    '\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n` +
+    '\n' +
     'Found 2 styleguide and formatting errors\n' +
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n` +
+    '\n' +
     'Found 1 broken external links\n' +
+    '\n' +
+    '--------------------------------------------------------------------------------\n' +
+    '\n' +
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n` +
+    '\n' +
     '  [✖] https://example.rus/ → Status: 0\n' +
+    '\n' +
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`
   const result = await cli(['print', '-v'], '.', false)
   console.log(result)
