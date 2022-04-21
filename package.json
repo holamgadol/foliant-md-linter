@@ -1,6 +1,6 @@
 {
   "name": "foliant-md-linter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI tool for linting Foliant markdown sources",
   "license": "MIT",
   "homepage": "https://github.com/holamgadol/foliant-md-linter",
@@ -15,7 +15,6 @@
   "scripts": {
     "lint": "eslint .",
     "test": "jest",
-    "mini-test": "./linter.js print -v",
     "prepare": "husky install",
     "validate": "npm run lint && npm test"
   },
