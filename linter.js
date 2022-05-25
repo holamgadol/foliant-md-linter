@@ -5,12 +5,14 @@ const {
   Option
 } = require('commander')
 const { exec } = require('child_process')
+const { spawn } = require('node:child_process')
 const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
+const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
 
 const markdownLintSlimLog = '.markdownlint_slim.log'
 const markdownLintFullLog = '.markdownlint_full.log'
@@ -123,7 +125,7 @@ const printLintResults = function (verbose = false) {
 }
 
 function writeLog (logFile) {
-  return (isWin === true) ? `>> ${logFile} 2>&1` : `&> ${logFile}`
+  return (isWin === true) ? `>> ${logFile} 2>&1 | type ${logFile}` : `2>&1 | tee ${logFile}`
 }
 
 const commandsGen = function (src = defaultSrc, customConfig = false, project = '') {
@@ -144,18 +146,35 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
 }
 
 function execute (command, verbose = false, debug = false) {
-  const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
   if (debug) {
     console.log('executed command: ')
     console.log(command)
   }
-  exec(command, { shell: shell }, (err, stdout, stderror) => {
-    if (err || stderror || stdout) {
+  if (verbose === false) {
+    exec(command, { shell: shell }, (err, stdout, stderror) => {
+      if (err || stderror || stdout) {
+        printLintResults(verbose)
+      } else {
+        console.log('Command completed with no errors!')
+      }
+    })
+  } else {
+    const spawnCommand = spawn(command, { shell: shell })
+
+    spawnCommand.stdout.on('data', (data) => {
+      console.log(`${data}`)
+    })
+
+    spawnCommand.stderr.on('data', (data) => {
+      console.error(`${data}`)
+    })
+
+    spawnCommand.on('close', (code) => {
+      console.log(`child process exited with code ${code}`)
+      console.log(`\n${'='.repeat(80)}\n\nRESULTS:\n\n${'='.repeat(80)}\n`)
       printLintResults(verbose)
-    } else {
-      console.log('Command completed with no errors!')
-    }
-  })
+    })
+  }
 }
 
 const verboseOption = new Option('-v, --verbose', 'Print full linting results').default(false)
