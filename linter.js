@@ -125,7 +125,7 @@ const printLintResults = function (verbose = false) {
 }
 
 function writeLog (logFile) {
-  return (isWin === true) ? `>> ${logFile} 2>&1 | type ${logFile}` : `2>&1 | tee ${logFile}`
+  return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
 const commandsGen = function (src = defaultSrc, customConfig = false, project = '') {
