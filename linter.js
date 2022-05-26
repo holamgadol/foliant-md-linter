@@ -4,8 +4,7 @@ const {
   Command,
   Option
 } = require('commander')
-const { exec } = require('child_process')
-const { spawn } = require('node:child_process')
+const { exec, spawn } = require('child_process')
 const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
