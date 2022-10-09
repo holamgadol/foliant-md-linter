@@ -20,6 +20,7 @@ const markdownLintLogs = /\.markdownlint_.*\.log/
 const defaultSrc = 'src'
 
 let execPath = path.resolve(__dirname, '../.bin/')
+let exitCode = 0
 
 if (fs.existsSync(path.join(__dirname, '/node_modules/.bin/markdownlint-cli2'))) {
   execPath = path.join(__dirname, '/node_modules/.bin/')
@@ -75,7 +76,9 @@ function numberFromLog (logFile, regex) {
         }
       })
     }
-
+    if (number > 0) {
+      exitCode = 1
+    }
     return number
   } catch (err) {
   }
@@ -138,9 +141,16 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
   commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
   commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
-  commands.lintSrc = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
+  commands.lintSrcEssential = `${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
+  commands.lintSrcFull = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
   return {
     commands
+  }
+}
+
+function checkExitCode () {
+  if (exitCode > 0) {
+    process.exit(1)
   }
 }
 
@@ -153,6 +163,7 @@ function execute (command, verbose = false, debug = false) {
     exec(command, { shell: shell }, (err, stdout, stderror) => {
       if (err || stderror || stdout) {
         printLintResults(verbose)
+        checkExitCode()
       } else {
         console.log('Command completed with no errors!')
       }
@@ -172,6 +183,7 @@ function execute (command, verbose = false, debug = false) {
       console.log(`child process exited with code ${code}`)
       console.log(`\n${'='.repeat(80)}\n\nRESULTS:\n\n${'='.repeat(80)}\n`)
       printLintResults(verbose)
+      checkExitCode()
     })
   }
 }
@@ -195,8 +207,20 @@ program.command('full-check')
   .addOption(projectOption)
   .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.lintSrc, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcFull, options.verbose, options.debug)
   })
+
+program.command('essential')
+  .description('Check md files for critical formatting errors with markdownlint and validate external links ith markdown-link-check')
+  .addOption(verboseOption)
+  .addOption(sourceOption)
+  .addOption(configOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
+  .action((options) => {
+    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcEssential, options.verbose, options.debug)
+  })
+
 program.command('urls')
   .description('Validate external links with markdown-link-check')
   .addOption(verboseOption)
