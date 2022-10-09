@@ -33,6 +33,8 @@ Run _foliant-md-linter_ from the project root with following commands and option
     - `-c`, `--config` Do not create a new markdownlint config file and use default or one in root directory instead (default: false)
     - `-p`, `--project <project-name>` specify project name
     - `-d`, `--debug` print executing command (default: false)
+- `essential` Check md files for critical formatting errors with markdownlint and validate external links ith markdown-link-check
+  - `-v`, `-s`, `-c`, `-p`, `-d`
 - `urls` Validate external links with markdown-link-check
     - `-v`, `-s`, `-d`
 - `styleguide` Check for styleguide adherence with markdownlint
