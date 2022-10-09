@@ -458,6 +458,173 @@ test('urls -v -s alt-src', async () => {
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
 })
 
+test('essential', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 8 critical formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+
+    'Found 2 broken external links\n',
+    `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
+  const result = await cli(['essential'], '.')
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+})
+
+test('essential -v', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 8 critical formatting errors\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    'FILE: src/linter-test-A.md\n',
+
+    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    'FILE: src/subproject/article.md\n',
+
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+
+    'Found 2 broken external links\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n`,
+
+    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n`,
+
+    '--------------------------------------------------------------------------------\n',
+
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n`,
+
+    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n`,
+
+    `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
+  const result = await cli(['essential', '-v'], '.')
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+})
+
+test('essential -v -p another-project', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 8 critical formatting errors\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    'FILE: src/linter-test-A.md\n',
+
+    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    'FILE: src/subproject/article.md\n',
+
+    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+
+    'Found 2 broken external links\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n`,
+
+    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n`,
+
+    '--------------------------------------------------------------------------------\n',
+
+    `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n`,
+
+    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n`,
+
+    `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
+  const result = await cli(['essential', '-v', '-p another-project'], '.')
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+})
+
+test('essential -s alt-src -v', async () => {
+  const expectedStdout = [
+    'Checked 1 files\n',
+    'Found 5 critical formatting errors\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    'FILE: alt-src/linter-test-B.md\n',
+
+    'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n',
+    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:16 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'alt-src/linter-test-B.md:20 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'alt-src/linter-test-B.md:24 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+
+    'Found 1 broken external links\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
+
+    '  [✖] https://example.rus/ → Status: 0\n',
+
+    `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
+  const result = await cli(['essential', '-s alt-src', '-v'], '.')
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+})
+
+test('essential -s alt-src -v -c', async () => {
+  const expectedStdout = [
+    'Checked 1 files\n',
+    'Found 2 critical formatting errors\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    'FILE: alt-src/linter-test-B.md\n',
+
+    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+
+    'Found 1 broken external links\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
+
+    '  [✖] https://example.rus/ → Status: 0\n',
+
+    `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
+  const result = await cli(['essential', '-s alt-src', '-v', '-c'], '.')
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+})
+
 test('full-check', async () => {
   const expectedStdout = [
     'Checked 2 files\n',
