@@ -20,6 +20,7 @@ const markdownLintLogs = /\.markdownlint_.*\.log/
 const defaultSrc = 'src'
 
 let execPath = path.resolve(__dirname, '../.bin/')
+let exitCode = 0
 
 if (fs.existsSync(path.join(__dirname, '/node_modules/.bin/markdownlint-cli2'))) {
   execPath = path.join(__dirname, '/node_modules/.bin/')
@@ -59,7 +60,7 @@ function printErrors (logFile) {
   }
 }
 
-function numberFromLog (logFile, regex) {
+function numberFromLog (logFile, regex, counterror = true) {
   try {
     const text = readFileSync(logFile).toString('utf-8')
     let m
@@ -75,7 +76,9 @@ function numberFromLog (logFile, regex) {
         }
       })
     }
-
+    if (counterror === true && number > 0) {
+      exitCode = 1
+    }
     return number
   } catch (err) {
   }
@@ -85,7 +88,7 @@ const printLintResults = function (verbose = false) {
   const markdownlintSlim = path.resolve(cwd, markdownLintSlimLog)
   const markdownFiles = /Linting: (\d+) file/g
   const files = fs.readdirSync(__dirname).filter(fn => fn.match(markdownLintLogs))
-  const markdownFilesCount = numberFromLog(files[0], markdownFiles)
+  const markdownFilesCount = numberFromLog(files[0], markdownFiles, false)
 
   if (markdownFilesCount !== null && markdownFilesCount !== undefined) {
     console.log(`Checked ${markdownFilesCount} files`)
@@ -138,13 +141,20 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
   commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
   commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
-  commands.lintSrc = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
+  commands.lintSrcEssential = `${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
+  commands.lintSrcFull = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
   return {
     commands
   }
 }
 
-function execute (command, verbose = false, debug = false) {
+function checkExitCode (allowfailure) {
+  if ((allowfailure === true) && (exitCode > 0)) {
+    process.exit(1)
+  }
+}
+
+function execute (command, verbose = false, debug = false, allowfailure = false) {
   if (debug) {
     console.log('executed command: ')
     console.log(command)
@@ -153,6 +163,7 @@ function execute (command, verbose = false, debug = false) {
     exec(command, { shell: shell }, (err, stdout, stderror) => {
       if (err || stderror || stdout) {
         printLintResults(verbose)
+        checkExitCode(allowfailure)
       } else {
         console.log('Command completed with no errors!')
       }
@@ -172,6 +183,7 @@ function execute (command, verbose = false, debug = false) {
       console.log(`child process exited with code ${code}`)
       console.log(`\n${'='.repeat(80)}\n\nRESULTS:\n\n${'='.repeat(80)}\n`)
       printLintResults(verbose)
+      checkExitCode(allowfailure)
     })
   }
 }
@@ -181,6 +193,7 @@ const sourceOption = new Option('-s, --source <path-to-sources>', 'source direct
 const configOption = new Option('-c, --config', 'use custom markdownlint config').default(false)
 const projectOption = new Option('-p, --project <project-name>', 'project name').default('')
 const debugOption = new Option('-d, --debug', 'print executing command').default(false)
+const allowfailureOption = new Option('-f, --allowfailure', 'allow exit with failure if errors').default(false)
 
 program
   .name('foliant-md-linter')
@@ -194,16 +207,31 @@ program.command('full-check')
   .addOption(configOption)
   .addOption(projectOption)
   .addOption(debugOption)
+  .addOption(allowfailureOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.lintSrc, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure)
   })
+
+program.command('essential')
+  .description('Check md files for critical formatting errors with markdownlint and validate external links ith markdown-link-check')
+  .addOption(verboseOption)
+  .addOption(sourceOption)
+  .addOption(configOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
+  .addOption(allowfailureOption)
+  .action((options) => {
+    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure)
+  })
+
 program.command('urls')
   .description('Validate external links with markdown-link-check')
   .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(debugOption)
+  .addOption(allowfailureOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config).commands.markdownlinkcheckSrc, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config).commands.markdownlinkcheckSrc, options.verbose, options.debug, options.allowfailure)
   })
 
 program.command('styleguide')
@@ -213,8 +241,9 @@ program.command('styleguide')
   .addOption(configOption)
   .addOption(projectOption)
   .addOption(debugOption)
+  .addOption(allowfailureOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFull, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure)
   })
 
 program.command('slim')
@@ -224,8 +253,9 @@ program.command('slim')
   .addOption(configOption)
   .addOption(projectOption)
   .addOption(debugOption)
+  .addOption(allowfailureOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcSlim, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure)
   })
 
 program.command('fix')
@@ -235,8 +265,9 @@ program.command('fix')
   .addOption(configOption)
   .addOption(projectOption)
   .addOption(debugOption)
+  .addOption(allowfailureOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFix, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure)
   })
 
 program.command('print')
