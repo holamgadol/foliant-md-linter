@@ -8,6 +8,7 @@ const { exec, spawn } = require('child_process')
 const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
+const { unlink } = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
@@ -16,6 +17,7 @@ const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
 const markdownLintSlimLog = '.markdownlint_slim.log'
 const markdownLintFullLog = '.markdownlint_full.log'
 const markdownLinkCheckLog = '.markdownlinkcheck.log'
+const defaultConfig = path.resolve(cwd, '.markdownlint-cli2.jsonc')
 const markdownLintLogs = /\.markdownlint_.*\.log/
 const defaultSrc = 'src'
 
@@ -148,13 +150,30 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
   }
 }
 
+function clearConfig (clearconfig) {
+  if (clearconfig === true) {
+    console.log(`removing ${defaultConfig} ...`)
+    unlink(defaultConfig, (err) => {
+      if (err && err.syscall === 'unlink') {
+        console.log(`${defaultConfig} is absent`)
+      }
+    })
+  }
+}
+
 function checkExitCode (allowfailure) {
   if ((allowfailure === true) && (exitCode > 0)) {
     process.exit(1)
   }
 }
 
-function execute (command, verbose = false, debug = false, allowfailure = false) {
+function afterLint (verbose, clearconfig, allowfailure) {
+  printLintResults(verbose)
+  clearConfig(clearconfig)
+  checkExitCode(allowfailure)
+}
+
+function execute (command, verbose = false, debug = false, allowfailure = false, clearconfig = false) {
   if (debug) {
     console.log('executed command: ')
     console.log(command)
@@ -162,8 +181,7 @@ function execute (command, verbose = false, debug = false, allowfailure = false)
   if (verbose === false) {
     exec(command, { shell: shell }, (err, stdout, stderror) => {
       if (err || stderror || stdout) {
-        printLintResults(verbose)
-        checkExitCode(allowfailure)
+        afterLint(verbose, clearconfig, allowfailure)
       } else {
         console.log('Command completed with no errors!')
       }
@@ -182,8 +200,7 @@ function execute (command, verbose = false, debug = false, allowfailure = false)
     spawnCommand.on('close', (code) => {
       console.log(`child process exited with code ${code}`)
       console.log(`\n${'='.repeat(80)}\n\nRESULTS:\n\n${'='.repeat(80)}\n`)
-      printLintResults(verbose)
-      checkExitCode(allowfailure)
+      afterLint(verbose, clearconfig, allowfailure)
     })
   }
 }
@@ -194,6 +211,7 @@ const configOption = new Option('-c, --config', 'use custom markdownlint config'
 const projectOption = new Option('-p, --project <project-name>', 'project name').default('')
 const debugOption = new Option('-d, --debug', 'print executing command').default(false)
 const allowfailureOption = new Option('-f, --allowfailure', 'allow exit with failure if errors').default(false)
+const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint config after execution').default(false)
 
 program
   .name('foliant-md-linter')
@@ -208,8 +226,9 @@ program.command('full-check')
   .addOption(projectOption)
   .addOption(debugOption)
   .addOption(allowfailureOption)
+  .addOption(clearconfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure)
+    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('essential')
@@ -220,8 +239,9 @@ program.command('essential')
   .addOption(projectOption)
   .addOption(debugOption)
   .addOption(allowfailureOption)
+  .addOption(clearconfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure)
+    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('urls')
@@ -230,8 +250,9 @@ program.command('urls')
   .addOption(sourceOption)
   .addOption(debugOption)
   .addOption(allowfailureOption)
+  .addOption(clearconfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config).commands.markdownlinkcheckSrc, options.verbose, options.debug, options.allowfailure)
+    execute(commandsGen(options.source, options.config).commands.markdownlinkcheckSrc, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('styleguide')
@@ -242,8 +263,9 @@ program.command('styleguide')
   .addOption(projectOption)
   .addOption(debugOption)
   .addOption(allowfailureOption)
+  .addOption(clearconfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure)
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('slim')
@@ -254,8 +276,9 @@ program.command('slim')
   .addOption(projectOption)
   .addOption(debugOption)
   .addOption(allowfailureOption)
+  .addOption(clearconfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure)
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('fix')
@@ -266,8 +289,9 @@ program.command('fix')
   .addOption(projectOption)
   .addOption(debugOption)
   .addOption(allowfailureOption)
+  .addOption(clearconfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure)
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('print')

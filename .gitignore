@@ -6,3 +6,4 @@ package-lock.json
 .DS_store
 /alt-src
 /src
+/no-errors-src

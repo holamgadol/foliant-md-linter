@@ -34,16 +34,17 @@ Run _foliant-md-linter_ from the project root with following commands and option
     - `-p`, `--project <project-name>` specify project name
     - `-d`, `--debug` print executing command (default: false)
     - `-f`, `--allowfailure` allow exit with failure if errors (default: false)
+    - `-l`, `--clearconfig` remove markdownlint config after execution (default: false)
 - `essential` Check md files for critical formatting errors with markdownlint and validate external links ith markdown-link-check
-  - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`
+  - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
 - `urls` Validate external links with markdown-link-check
-    - `-v`, `-s`, `-d`, `-f`
+    - `-v`, `-s`, `-d`, `-f`, `-l`
 - `styleguide` Check for styleguide adherence with markdownlint
-    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`
+    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
 - `slim` Check for critical errors with markdownlint
-    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`
+    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
 - `fix` Fix formatting errors with markdownlint
-    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`
+    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
 - `print` Print linting results
     - `-v`
 - `create-full-config` Create markdownlint config for styleguide adherence

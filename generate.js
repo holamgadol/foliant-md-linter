@@ -132,7 +132,7 @@ function createConfig (mode = 'full', source = '', project = '') {
     config
   }
   const json = JSON.stringify(obj, null, 4)
-  fs.writeFileSync(`${cwd}/.markdownlint-cli2.jsonc`, json, 'utf8')
+  fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), json, 'utf8')
 }
 
 program
