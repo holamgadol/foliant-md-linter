@@ -69,6 +69,21 @@ test('slim', async () => {
     'Found 8 critical formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('slim -l', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 8 critical formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}`]
+  const result = await cli(['slim', '-l'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -81,6 +96,22 @@ test('slim -c', async () => {
     'Found 2 critical formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-c'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('slim -l -c', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 2 critical formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}\n`,
+    `${path.join(cwd, '.markdownlint-cli2.jsonc is absent')}\n`]
+  const result = await cli(['slim', '-l', '-c'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -112,6 +143,7 @@ test('slim -v', async () => {
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-v'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -135,6 +167,7 @@ test('slim -v -s alt-src', async () => {
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-v', '-s alt-src'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -166,6 +199,7 @@ test('slim -v -p another-project', async () => {
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-v', '-p another-project'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -197,6 +231,7 @@ test('slim -v -p another-project -f', async () => {
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-v', '-p another-project', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -209,6 +244,7 @@ test('slim -v -s no-errors-src -f', async () => {
     'Found 0 critical formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-v', '-s no-errors-src', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -224,6 +260,24 @@ test('styleguide', async () => {
     'Found 11 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['styleguide'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('styleguide -l', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 8 critical formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+
+    'Found 11 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`,
+    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}`]
+  const result = await cli(['styleguide', '-l'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -258,6 +312,7 @@ test('styleguide -v', async () => {
     'Found 11 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['styleguide', '-v'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -292,6 +347,7 @@ test('styleguide -v -p another-project', async () => {
     'Found 11 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['styleguide', '-v', '-p another-project'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -318,6 +374,7 @@ test('styleguide -s alt-src -v', async () => {
     'Found 8 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['styleguide', '-s alt-src', '-v'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -341,6 +398,7 @@ test('styleguide -s alt-src -v -c', async () => {
     'Found 2 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['styleguide', '-s alt-src', '-v', '-c'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -364,6 +422,7 @@ test('styleguide -s alt-src -v -c -f', async () => {
     'Found 2 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['styleguide', '-s alt-src', '-v', '-c', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -378,6 +437,7 @@ test('styleguide -s no-errors-src -v -c -f', async () => {
     'Found 0 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['styleguide', '-s no-errors-src', '-v', '-c', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -392,6 +452,23 @@ test('fix', async () => {
     'Found 9 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['fix'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('fix -l', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 8 critical formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+    'Found 9 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`,
+    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}`]
+  const result = await cli(['fix', '-l'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -426,6 +503,7 @@ test('fix -v', async () => {
     'Found 9 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['fix', '-v'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -460,6 +538,7 @@ test('fix -v -p another-project', async () => {
     'Found 9 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['fix', '-v', '-p another-project'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -483,6 +562,7 @@ test('fix -v -c', async () => {
     'Found 2 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['fix', '-v', '-c'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -506,6 +586,7 @@ test('fix -v -c -s alt-src', async () => {
     'Found 2 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['fix', '-v', '-c', '-s alt-src'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -529,6 +610,7 @@ test('fix -v -c -s alt-src -f', async () => {
     'Found 2 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['fix', '-v', '-c', '-s alt-src', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -543,6 +625,7 @@ test('fix -v -c -s no-errors-src -f', async () => {
     'Found 0 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['fix', '-v', '-c', '-s no-errors-src', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -640,6 +723,24 @@ test('essential', async () => {
     'Found 2 broken external links\n',
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('essential -l', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 8 critical formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+
+    'Found 2 broken external links\n',
+    `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`,
+    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}`]
+  const result = await cli(['essential', '-l'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -687,6 +788,7 @@ test('essential -v', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-v'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -734,6 +836,7 @@ test('essential -v -p another-project', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-v', '-p another-project'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -767,6 +870,7 @@ test('essential -s alt-src -v', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-s alt-src', '-v'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -797,6 +901,7 @@ test('essential -s alt-src -v -c', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-s alt-src', '-v', '-c'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -827,6 +932,7 @@ test('essential -s alt-src -v -c -f', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-s alt-src', '-v', '-c', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -840,6 +946,7 @@ test('essential -s no-errors-src -v -c -f', async () => {
     'Found 0 broken external links\n',
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-s no-errors-src', '-v', '-c', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -858,6 +965,7 @@ test('full-check', async () => {
     'Found 2 broken external links\n',
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -907,6 +1015,7 @@ test('full-check -v', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-v'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -956,6 +1065,7 @@ test('full-check -v -p another-project', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-v', '-p another-project'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -991,6 +1101,7 @@ test('full-check -s alt-src -v', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-s alt-src', '-v'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -1023,6 +1134,44 @@ test('full-check -s alt-src -v -c', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-s alt-src', '-v', '-c'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('full-check -s alt-src -v -c -l', async () => {
+  const expectedStdout = [
+    'Checked 1 files\n',
+    'Found 2 critical formatting errors\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    'FILE: alt-src/linter-test-B.md\n',
+
+    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
+
+    'Found 2 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`,
+
+    'Found 1 broken external links\n',
+
+    '--------------------------------------------------------------------------------\n',
+
+    `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
+
+    '  [✖] https://example.rus/ → Status: 0\n',
+
+    `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`,
+    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}\n`,
+    `${path.join(cwd, '.markdownlint-cli2.jsonc is absent')}\n`
+  ]
+  const result = await cli(['full-check', '-s alt-src', '-v', '-c', '-l'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
@@ -1056,6 +1205,7 @@ test('full-check -s alt-src -v -c -f', async () => {
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-s alt-src', '-v', '-c', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
