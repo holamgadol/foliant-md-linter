@@ -93,7 +93,7 @@ test('slim -l', async () => {
 test('slim -c', async () => {
   const expectedStdout = [
     'Checked 2 files\n',
-    'Found 2 critical formatting errors\n',
+    'Found 3 critical formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-c'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
@@ -106,7 +106,7 @@ test('slim -c', async () => {
 test('slim -l -c', async () => {
   const expectedStdout = [
     'Checked 2 files\n',
-    'Found 2 critical formatting errors\n',
+    'Found 3 critical formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
     `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}\n`,
     `${path.join(cwd, '.markdownlint-cli2.jsonc is absent')}\n`]
@@ -548,7 +548,7 @@ test('fix -v -p another-project', async () => {
 test('fix -v -c', async () => {
   const expectedStdout = [
     'Checked 2 files\n',
-    'Found 2 critical formatting errors\n',
+    'Found 3 critical formatting errors\n',
 
     '--------------------------------------------------------------------------------\n',
 
@@ -556,10 +556,12 @@ test('fix -v -c', async () => {
 
     'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
     'src/linter-test-A.md:5 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'FILE: src/subproject/article.md\n',
+    'src/subproject/article.md:3:1 MD051/link-fragments Link fragments should be valid [Context: "[broken local link](#anchor)"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
-    'Found 2 styleguide and formatting errors\n',
+    'Found 3 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['fix', '-v', '-c'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
