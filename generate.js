@@ -65,6 +65,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     MD049: { style: 'underscore' },
     MD050: { style: 'asterisk' },
     MD051: false,
+    MD052: true,
+    MD053: false,
     'indented-fence': true,
     'non-literal-fence-label': true,
     'fenced-code-in-quote': true,
@@ -111,6 +113,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     MD049: false,
     MD050: false,
     MD051: false,
+    MD052: true,
+    MD053: false,
     'indented-fence': true,
     'non-literal-fence-label': true,
     'fenced-code-in-quote': true,
@@ -121,11 +125,58 @@ function createConfig (mode = 'full', source = '', project = '') {
     }
   }
 
+  const configTypograph = {
+    MD001: false,
+    MD004: false,
+    MD005: false,
+    MD007: false,
+    MD009: false,
+    MD010: false,
+    MD012: false,
+    MD013: false,
+    MD014: false,
+    MD018: false,
+    MD019: false,
+    MD022: false,
+    MD024: false,
+    MD025: false,
+    MD026: false,
+    MD027: false,
+    MD028: false,
+    MD029: false,
+    MD030: false,
+    MD031: false,
+    MD032: false,
+    MD033: false,
+    MD034: false,
+    MD036: false,
+    MD037: false,
+    MD038: false,
+    MD040: false,
+    MD041: false,
+    MD045: false,
+    MD046: false,
+    MD047: false,
+    MD048: false,
+    MD049: false,
+    MD050: false,
+    MD051: false,
+    MD052: false,
+    MD053: false,
+    'indented-fence': false,
+    'non-literal-fence-label': false,
+    'fenced-code-in-quote': false,
+    typograph: true,
+    'validate-internal-links': false
+  }
+
   let config
   if (mode === 'slim') {
     config = configSlim
   } else if (mode === 'default') {
     return null
+  } else if (mode === 'typograph') {
+    config = configTypograph
   } else {
     config = configFull
   }

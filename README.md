@@ -109,13 +109,16 @@ Run _foliant-md-linter_ from the project root with following commands and option
     - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
 - `fix` Fix formatting errors with markdownlint
     - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
+- `typograph` Fix typograph errors with markdownlint
+    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
 - `print` Print linting results
     - `-v`
 - `create-full-config` Create markdownlint config for styleguide adherence
     - `-s`, `-p`, `-d`
 - `create-slim-config` Create markdownlint config for critical errors check
     - `-s`, `-p`, `-d`
-
+- `create-typograph-config` Create typograph config for typograph errors check
+    - `-s`, `-p`, `-d`
 
 ### Examples
 
