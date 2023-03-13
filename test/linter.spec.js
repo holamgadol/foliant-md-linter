@@ -637,8 +637,6 @@ test('fix -v -c -s no-errors-src -f', async () => {
 test('typograph', async () => {
   const expectedStdout = [
     'Checked 2 files\n',
-    'Found 8 critical formatting errors\n',
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
     'Found 0 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['typograph'], '.')
@@ -652,8 +650,6 @@ test('typograph', async () => {
 test('typograph -l', async () => {
   const expectedStdout = [
     'Checked 2 files\n',
-    'Found 8 critical formatting errors\n',
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
     'Found 0 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`,
     `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}`]
@@ -668,28 +664,6 @@ test('typograph -l', async () => {
 test('typograph -v', async () => {
   const expectedStdout = [
     'Checked 2 files\n',
-    'Found 8 critical formatting errors\n',
-
-    '--------------------------------------------------------------------------------\n',
-
-    'FILE: src/linter-test-A.md\n',
-
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
-
-    '--------------------------------------------------------------------------------\n',
-
-    'FILE: src/subproject/article.md\n',
-
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
-
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
-
     'Found 0 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['typograph', '-v'], '.')
@@ -703,28 +677,6 @@ test('typograph -v', async () => {
 test('typograph -v -p another-project', async () => {
   const expectedStdout = [
     'Checked 2 files\n',
-    'Found 8 critical formatting errors\n',
-
-    '--------------------------------------------------------------------------------\n',
-
-    'FILE: src/linter-test-A.md\n',
-
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
-    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
-
-    '--------------------------------------------------------------------------------\n',
-
-    'FILE: src/subproject/article.md\n',
-
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
-
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
-
     'Found 0 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['typograph', '-v', '-p another-project'], '.')
@@ -738,19 +690,6 @@ test('typograph -v -p another-project', async () => {
 test('typograph -v -c', async () => {
   const expectedStdout = [
     'Checked 2 files\n',
-    'Found 3 critical formatting errors\n',
-
-    '--------------------------------------------------------------------------------\n',
-
-    'FILE: src/linter-test-A.md\n',
-
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:5 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
-    'FILE: src/subproject/article.md\n',
-    'src/subproject/article.md:3:1 MD051/link-fragments Link fragments should be valid [Context: "[broken local link](#anchor)"]\n',
-
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
-
     'Found 3 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['typograph', '-v', '-c'], '.')
@@ -764,17 +703,6 @@ test('typograph -v -c', async () => {
 test('typograph -v -c -s alt-src', async () => {
   const expectedStdout = [
     'Checked 1 files\n',
-    'Found 2 critical formatting errors\n',
-
-    '--------------------------------------------------------------------------------\n',
-
-    'FILE: alt-src/linter-test-B.md\n',
-
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
-
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
-
     'Found 2 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['typograph', '-v', '-c', '-s alt-src'], '.')
@@ -788,17 +716,6 @@ test('typograph -v -c -s alt-src', async () => {
 test('typograph -v -c -s alt-src -f', async () => {
   const expectedStdout = [
     'Checked 1 files\n',
-    'Found 2 critical formatting errors\n',
-
-    '--------------------------------------------------------------------------------\n',
-
-    'FILE: alt-src/linter-test-B.md\n',
-
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
-
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
-
     'Found 2 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['typograph', '-v', '-c', '-s alt-src', '-f'], '.')
@@ -812,8 +729,6 @@ test('typograph -v -c -s alt-src -f', async () => {
 test('typograph -v -c -s no-errors-src -f', async () => {
   const expectedStdout = [
     'Checked 1 files\n',
-    'Found 0 critical formatting errors\n',
-    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
     'Found 0 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['typograph', '-v', '-c', '-s no-errors-src', '-f'], '.')
