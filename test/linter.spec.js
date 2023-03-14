@@ -44,7 +44,7 @@ test('First print', async () => {
 })
 
 test('create-full-config', async () => {
-  const expectedStdout = ['Command completed with no errors!\n']
+  const expectedStdout = ['']
   const result = await cli(['create-full-config'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
@@ -54,8 +54,18 @@ test('create-full-config', async () => {
 })
 
 test('create-slim-config', async () => {
-  const expectedStdout = ['Command completed with no errors!\n']
+  const expectedStdout = ['']
   const result = await cli(['create-slim-config'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('create-typograph-config', async () => {
+  const expectedStdout = ['']
+  const result = await cli(['create-typograph-config'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 

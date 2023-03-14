@@ -186,13 +186,14 @@ function createConfig (mode = 'full', source = '', project = '') {
   }
   const json = JSON.stringify(obj, null, 4)
   fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), json, 'utf8')
+  console.log(`${mode} markdownlint config created succesfully!`)
 }
 
 program
   .name('create-markdownlint-config')
   .description('script for generating .markdownlint-cli2.jsonc in foliant-project root')
   .version('0.0.1')
-  .option('-m, --mode <mode>', 'full, slim or default config', 'full')
+  .option('-m, --mode <mode>', 'full, slim, typograph or default config', 'full')
   .option('-s, --source <source>', 'relative path to source directory', '')
   .option('-p, --project <project>', 'project name', '')
 
