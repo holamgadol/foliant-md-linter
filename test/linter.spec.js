@@ -44,7 +44,7 @@ test('First print', async () => {
 })
 
 test('create-full-config', async () => {
-  const expectedStdout = ['Command completed with no errors!\n']
+  const expectedStdout = ['']
   const result = await cli(['create-full-config'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
@@ -54,8 +54,18 @@ test('create-full-config', async () => {
 })
 
 test('create-slim-config', async () => {
-  const expectedStdout = ['Command completed with no errors!\n']
+  const expectedStdout = ['']
   const result = await cli(['create-slim-config'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('create-typograph-config', async () => {
+  const expectedStdout = ['']
+  const result = await cli(['create-typograph-config'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
   console.log(result)
 
@@ -627,6 +637,111 @@ test('fix -v -c -s no-errors-src -f', async () => {
     'Found 0 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
   const result = await cli(['fix', '-v', '-c', '-s no-errors-src', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('typograph', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 0 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
+  const result = await cli(['typograph'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('typograph -l', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 0 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`,
+    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}`]
+  const result = await cli(['typograph', '-l'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('typograph -v', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 0 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
+  const result = await cli(['typograph', '-v'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('typograph -v -p another-project', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 0 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
+  const result = await cli(['typograph', '-v', '-p another-project'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('typograph -v -c', async () => {
+  const expectedStdout = [
+    'Checked 2 files\n',
+    'Found 3 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
+  const result = await cli(['typograph', '-v', '-c'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('typograph -v -c -s alt-src', async () => {
+  const expectedStdout = [
+    'Checked 1 files\n',
+    'Found 2 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
+  const result = await cli(['typograph', '-v', '-c', '-s alt-src'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('typograph -v -c -s alt-src -f', async () => {
+  const expectedStdout = [
+    'Checked 1 files\n',
+    'Found 2 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
+  const result = await cli(['typograph', '-v', '-c', '-s alt-src', '-f'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(1)
+})
+
+test('typograph -v -c -s no-errors-src -f', async () => {
+  const expectedStdout = [
+    'Checked 1 files\n',
+    'Found 0 styleguide and formatting errors\n',
+    `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`]
+  const result = await cli(['typograph', '-v', '-c', '-s no-errors-src', '-f'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 

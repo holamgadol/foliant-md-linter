@@ -137,9 +137,11 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
   const and = (isWin === true) ? '&' : ';'
   commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} -p "${project}"` : 'echo "using custom config"'
   commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} -p "${project}"` : 'echo "using custom config"'
+  commands.createTypographMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m typograph -s ${src} -p "${project}"` : 'echo "using custom config"'
   commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
   commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
   commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
+  commands.markdownlintSrcTypograph = `${commands.createTypographMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
   commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
   commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
@@ -294,6 +296,19 @@ program.command('fix')
     execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
+program.command('typograph')
+  .description('Fix typographic errors with markdownlint')
+  .addOption(verboseOption)
+  .addOption(sourceOption)
+  .addOption(configOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
+  .addOption(allowfailureOption)
+  .addOption(clearconfigOption)
+  .action((options) => {
+    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcTypograph, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+  })
+
 program.command('print')
   .description('Print linting results')
   .addOption(verboseOption)
@@ -317,6 +332,15 @@ program.command('create-slim-config')
   .addOption(debugOption)
   .action((options) => {
     execute(commandsGen(options.source, options.config, options.project).commands.createSlimMarkdownlintConfig, options.verbose, options.debug)
+  })
+
+program.command('create-typograph-config')
+  .description('Create typograph markdownlint config')
+  .addOption(sourceOption)
+  .addOption(projectOption)
+  .addOption(debugOption)
+  .action((options) => {
+    execute(commandsGen(options.source, options.config, options.project).commands.createTypographMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.parse()
