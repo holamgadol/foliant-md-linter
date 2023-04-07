@@ -218,7 +218,7 @@ const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint c
 program
   .name('foliant-md-linter')
   .description('CLI tool for linting Foliant markdown sources')
-  .version('0.0.1')
+  .version('0.1.10')
 
 program.command('full-check')
   .description('Check md files with markdownlint and markdown-link-check')
