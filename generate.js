@@ -202,7 +202,7 @@ program
   .name('create-markdownlint-config')
   .description('script for generating .markdownlint-cli2.jsonc in foliant-project root')
   .version('0.0.1')
-  .option('-m, --mode <mode>', 'full, slim, typograph or default config', 'full')
+  .option('-m, --mode <mode>', 'full, slim, typograph or default config', 'slim')
   .option('-s, --source <source>', 'relative path to source directory', '')
   .option('-p, --project <project>', 'project name', '')
 

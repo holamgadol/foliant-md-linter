@@ -132,21 +132,15 @@ function writeLog (logFile) {
   return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
-const commandsGen = function (src = defaultSrc, customConfig = false, project = '') {
+const commandsGen = function (src = defaultSrc, customConfig = false, project = '', markdownlintmode, isFix) {
   const commands = {}
-  const and = (isWin === true) ? '&' : ';'
-  commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} -p "${project}"` : 'echo "using custom config"'
-  commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} -p "${project}"` : 'echo "using custom config"'
-  commands.createTypographMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m typograph -s ${src} -p "${project}"` : 'echo "using custom config"'
-  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
-  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
-  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
-  commands.markdownlintSrcTypograph = `${commands.createTypographMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
+  const fix = (isFix === true) ? '-fix' : ''
+  commands.createMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m ${markdownlintmode} -s ${src} -p "${project}"` : 'echo "using custom config"'
+  commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
   commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
-  commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
-  commands.lintSrcEssential = `${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
-  commands.lintSrcFull = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
+  commands.markdownlinkcheck = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
+  commands.lintSrcFull = `${commands.markdownlint} & ${commands.markdownlinkcheck}`
   return {
     commands
   }
@@ -212,8 +206,10 @@ const sourceOption = new Option('-s, --source <path-to-sources>', 'source direct
 const configOption = new Option('-c, --config', 'use custom markdownlint config').default(false)
 const projectOption = new Option('-p, --project <project-name>', 'project name').default('')
 const debugOption = new Option('-d, --debug', 'print executing command').default(false)
-const allowfailureOption = new Option('-f, --allowfailure', 'allow exit with failure if errors').default(false)
+const allowfailureOption = new Option('-a, --allowfailure', 'allow exit with failure if errors').default(false)
 const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint config after execution').default(false)
+const fixOption = new Option('-f, --fix', 'fix errors with markdownlint').default(false)
+const markdownlintmodeOption = new Option('-m, --markdownlintmode <mode-name>', 'set mode for markdownlint').choices(['full', 'slim', 'typograph']).default('slim')
 
 program
   .name('foliant-md-linter')
@@ -229,12 +225,14 @@ program.command('full-check')
   .addOption(debugOption)
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
+  .addOption(fixOption)
+  .addOption(markdownlintmodeOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.markdownlintmode, options.fix).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
-program.command('essential')
-  .description('Check md files for critical formatting errors with markdownlint and validate external links ith markdown-link-check')
+program.command('markdown')
+  .description('Check md files for errors with markdownlint')
   .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(configOption)
@@ -242,8 +240,10 @@ program.command('essential')
   .addOption(debugOption)
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
+  .addOption(fixOption)
+  .addOption(markdownlintmodeOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.markdownlintmode, options.fix).commands.markdownlint, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('urls')
@@ -254,59 +254,7 @@ program.command('urls')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config).commands.markdownlinkcheckSrc, options.verbose, options.debug, options.allowfailure, options.clearconfig)
-  })
-
-program.command('styleguide')
-  .description('Check for styleguide adherence with markdownlint')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
-  })
-
-program.command('slim')
-  .description('Check for critical errors with markdownlint')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure, options.clearconfig)
-  })
-
-program.command('fix')
-  .description('Fix formatting errors with markdownlint')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig)
-  })
-
-program.command('typograph')
-  .description('Fix typographic errors with markdownlint')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcTypograph, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config).commands.markdownlinkcheck, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('print')
@@ -316,31 +264,15 @@ program.command('print')
     printLintResults(options.verbose)
   })
 
-program.command('create-full-config')
-  .description('Create full markdownlint config')
+program.command('create-config')
+  .description('Create markdownlint config')
+  .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(projectOption)
+  .addOption(markdownlintmodeOption)
   .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.createFullMarkdownlintConfig, options.verbose, options.debug)
-  })
-
-program.command('create-slim-config')
-  .description('Create slim markdownlint config')
-  .addOption(sourceOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.createSlimMarkdownlintConfig, options.verbose, options.debug)
-  })
-
-program.command('create-typograph-config')
-  .description('Create typograph markdownlint config')
-  .addOption(sourceOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.createTypographMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project, options.markdownlintmode).commands.createMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.parse()
