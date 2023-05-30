@@ -14,11 +14,9 @@ const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
 const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
 
-const markdownLintSlimLog = '.markdownlint_slim.log'
-const markdownLintFullLog = '.markdownlint_full.log'
+const markdownLintLog = '.markdownlint.log'
 const markdownLinkCheckLog = '.markdownlinkcheck.log'
 const defaultConfig = path.resolve(cwd, '.markdownlint-cli2.jsonc')
-const markdownLintLogs = /\.markdownlint_.*\.log/
 const defaultSrc = 'src'
 
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -33,7 +31,7 @@ function printErrors (logFile) {
   let file
   let fileTmp
   let fileLink
-  if (logFile.match(markdownLintLogs)) {
+  if (logFile.match(markdownLintLog)) {
     regex = /^(?!Finding: |Linting: |Summary: |markdownlint-cli2| ).+/gm
   } else {
     regex = /^\s*\[✖].* Status:/gm
@@ -47,10 +45,10 @@ function printErrors (logFile) {
       }
       if (line.match(regex)) {
         file = line.split(':')[0]
-        if (fileTmp !== file && logFile.match(markdownLintLogs)) {
+        if (fileTmp !== file && logFile.match(markdownLintLog)) {
           fileTmp = file
           console.log(`\n${'-'.repeat(80)}\n\nFILE: ${fileTmp}\n`)
-        } else if (!logFile.match(markdownLintLogs)) {
+        } else if (!logFile.match(markdownLintLog)) {
           console.log(`\n${'-'.repeat(80)}\n\n${fileLink}\n`)
         }
         console.log(line)
@@ -87,9 +85,9 @@ function numberFromLog (logFile, regex, counterror = true) {
 }
 
 const printLintResults = function (verbose = false) {
-  const markdownlintSlim = path.resolve(cwd, markdownLintSlimLog)
+  const markdownlintLogPath = path.resolve(cwd, markdownLintLog)
   const markdownFiles = /Linting: (\d+) file/g
-  const files = fs.readdirSync(__dirname).filter(fn => fn.match(markdownLintLogs))
+  const files = fs.readdirSync(__dirname).filter(fn => fn.match(markdownLintLog))
   const markdownFilesCount = numberFromLog(files[0], markdownFiles, false)
 
   if (markdownFilesCount !== null && markdownFilesCount !== undefined) {
@@ -97,22 +95,14 @@ const printLintResults = function (verbose = false) {
   }
 
   const markdownLintErrors = /Summary: (\d+) error/g
-  let markdownLintErrorsCount = numberFromLog(markdownlintSlim, markdownLintErrors)
+  const markdownLintErrorsCount = numberFromLog(markdownlintLogPath, markdownLintErrors)
 
   if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
-    console.log(`Found ${markdownLintErrorsCount} critical formatting errors`)
+    console.log(`Found ${markdownLintErrorsCount} formatting errors`)
     if (verbose) {
-      printErrors(markdownlintSlim)
+      printErrors(markdownlintLogPath)
     }
-    console.log(`Full markdownlint log see in ${markdownlintSlim}\n`)
-  }
-
-  const markdownlintFull = path.resolve(cwd, markdownLintFullLog)
-  markdownLintErrorsCount = numberFromLog(markdownlintFull, markdownLintErrors)
-
-  if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
-    console.log(`Found ${markdownLintErrorsCount} styleguide and formatting errors`)
-    console.log(`Full markdownlint log see in ${markdownlintFull}\n`)
+    console.log(`Full markdownlint log see in ${markdownlintLogPath}\n`)
   }
 
   const markdownLinkCheckErrors = /ERROR: (\d+) dead links found!/g
@@ -136,7 +126,7 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
   const commands = {}
   const fix = (isFix === true) ? '-fix' : ''
   commands.createMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m ${markdownlintmode} -s ${src} -p "${project}"` : 'echo "using custom config"'
-  commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
+  commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} "${src}/**/*.md" ${writeLog(markdownLintLog)}`
   commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
   commands.markdownlinkcheck = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
