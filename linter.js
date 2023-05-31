@@ -122,10 +122,10 @@ function writeLog (logFile) {
   return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
-const commandsGen = function (src = defaultSrc, customConfig = false, project = '', markdownlintmode, isFix) {
+const commandsGen = function (src = defaultSrc, configPath = '', project = '', markdownlintmode, isFix) {
   const commands = {}
   const fix = (isFix === true) ? '-fix' : ''
-  commands.createMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m ${markdownlintmode} -s ${src} -p "${project}"` : 'echo "using custom config"'
+  commands.createMarkdownlintConfig = (markdownlintmode !== 'mdlint-default') ? `node ${path.join(__dirname, '/generate.js')} -m ${markdownlintmode} -s ${src} -p "${project}" -c "${configPath}"` : 'echo "using default markdownlint config"'
   commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} "${src}/**/*.md" ${writeLog(markdownLintLog)}`
   commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
@@ -193,13 +193,13 @@ function execute (command, verbose = false, debug = false, allowfailure = false,
 
 const verboseOption = new Option('-v, --verbose', 'Print full linting results').default(false)
 const sourceOption = new Option('-s, --source <path-to-sources>', 'source directory').default(defaultSrc)
-const configOption = new Option('-c, --config', 'use custom markdownlint config').default(false)
+const configOption = new Option('-c, --config <path-to-config>', 'path to custom config').default('')
 const projectOption = new Option('-p, --project <project-name>', 'project name').default('')
 const debugOption = new Option('-d, --debug', 'print executing command').default(false)
 const allowfailureOption = new Option('-a, --allowfailure', 'allow exit with failure if errors').default(false)
 const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint config after execution').default(false)
 const fixOption = new Option('-f, --fix', 'fix errors with markdownlint').default(false)
-const markdownlintmodeOption = new Option('-m, --markdownlintmode <mode-name>', 'set mode for markdownlint').choices(['full', 'slim', 'typograph']).default('slim')
+const markdownlintmodeOption = new Option('-m, --markdownlintmode <mode-name>', 'set mode for markdownlint').choices(['full', 'slim', 'typograph', 'mdlint-default']).default('slim')
 
 program
   .name('foliant-md-linter')

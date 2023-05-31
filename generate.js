@@ -6,7 +6,7 @@ const fs = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
 
-function createConfig (mode = 'full', source = '', project = '') {
+function createConfig (mode = 'full', source = '', project = '', configpath = '') {
   let customRules
   if (fs.existsSync(path.join(__dirname, '/node_modules/markdownlint-rules-foliant/package.json'))) {
     customRules = [
@@ -180,22 +180,51 @@ function createConfig (mode = 'full', source = '', project = '') {
   }
 
   let config
-  if (mode === 'slim') {
-    config = configSlim
-  } else if (mode === 'default') {
-    return null
-  } else if (mode === 'typograph') {
-    config = configTypograph
+  if (configpath === '') {
+    if (mode === 'slim') {
+      config = configSlim
+    } else if (mode === 'default') {
+      return null
+    } else if (mode === 'typograph') {
+      config = configTypograph
+    } else {
+      config = configFull
+    }
   } else {
-    config = configFull
+    mode = 'custom'
+    console.log('loading config...')
+    try {
+      const sharedConfig = require(path.resolve(cwd, configpath))
+      if (sharedConfig && sharedConfig.hasOwnProperty('markdownlintConfig')) {
+        console.log(sharedConfig.markdownlintConfig)
+        config = sharedConfig.markdownlintConfig
+      } else {
+        console.log('markdownlintConfig not found in JSON file')
+        mode = 'slim'
+        config = configSlim
+      }
+    } catch (err) {
+      if (err.code === 'MODULE_NOT_FOUND') {
+        console.error('File not found')
+      } else if (err instanceof SyntaxError) {
+        console.error('Invalid JSON format')
+      } else {
+        console.error(err)
+      }
+      mode = 'slim'
+      config = configSlim
+    }
+
+    console.log(config)
   }
+
   const obj = {
     customRules,
     config
   }
   const json = JSON.stringify(obj, null, 4)
   fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), json, 'utf8')
-  console.log(`${mode} markdownlint config created succesfully!`)
+  console.log(`${mode} markdownlint config created successfully!`)
 }
 
 program
@@ -205,8 +234,9 @@ program
   .option('-m, --mode <mode>', 'full, slim, typograph or default config', 'slim')
   .option('-s, --source <source>', 'relative path to source directory', '')
   .option('-p, --project <project>', 'project name', '')
+  .option('-c, --configpath <path-to-config>', 'path to custom config', '')
 
 program.parse()
 
 const options = program.opts()
-createConfig(options.mode, options.source, options.project)
+createConfig(options.mode, options.source, options.project, options.configpath)
