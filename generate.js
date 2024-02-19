@@ -15,7 +15,7 @@ function createConfig (mode = 'full', source = '', project = '') {
       path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
       path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
       path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/checking-frontmatter-tags')
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
     ]
   } else {
     customRules = [
@@ -24,7 +24,7 @@ function createConfig (mode = 'full', source = '', project = '') {
       path.resolve(__dirname, '../markdownlint-rules-foliant/lib/fenced-code-in-quote'),
       path.resolve(__dirname, '../markdownlint-rules-foliant/lib/typograph'),
       path.resolve(__dirname, '../markdownlint-rules-foliant/lib/validate-internal-links'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/checking-frontmatter-tags')
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/frontmatter-tags-exist')
     ]
   }
 
@@ -76,7 +76,7 @@ function createConfig (mode = 'full', source = '', project = '') {
       src: source.length === 0 ? undefined : source,
       project: project.length === 0 ? undefined : project
     },
-    'checking-frontmatter-tags': true
+    'frontmatter-tags-exist': true
   }
 
   const configSlim = {
@@ -125,7 +125,7 @@ function createConfig (mode = 'full', source = '', project = '') {
       src: source.length === 0 ? undefined : source,
       project: project.length === 0 ? undefined : project
     },
-    'checking-frontmatter-tags': false
+    'frontmatter-tags-exist': false
   }
 
   const configTypograph = {
@@ -180,7 +180,7 @@ function createConfig (mode = 'full', source = '', project = '') {
     'fenced-code-in-quote': false,
     typograph: true,
     'validate-internal-links': false,
-    'checking-frontmatter-tags': true
+    'frontmatter-tags-exist': true
   }
 
   let config
