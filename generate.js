@@ -14,7 +14,8 @@ function createConfig (mode = 'full', source = '', project = '') {
       path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
       path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
       path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links')
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/checking-frontmatter-tags')
     ]
   } else {
     customRules = [
@@ -22,8 +23,8 @@ function createConfig (mode = 'full', source = '', project = '') {
       path.resolve(__dirname, '../markdownlint-rules-foliant/lib/non-literal-fence-label'),
       path.resolve(__dirname, '../markdownlint-rules-foliant/lib/fenced-code-in-quote'),
       path.resolve(__dirname, '../markdownlint-rules-foliant/lib/typograph'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/validate-internal-links')
-
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/validate-internal-links'),
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/checking-frontmatter-tags')
     ]
   }
 
@@ -74,7 +75,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     'validate-internal-links': {
       src: source.length === 0 ? undefined : source,
       project: project.length === 0 ? undefined : project
-    }
+    },
+    'checking-frontmatter-tags': true
   }
 
   const configSlim = {
@@ -122,7 +124,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     'validate-internal-links': {
       src: source.length === 0 ? undefined : source,
       project: project.length === 0 ? undefined : project
-    }
+    },
+    'checking-frontmatter-tags': false
   }
 
   const configTypograph = {
@@ -176,7 +179,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     'non-literal-fence-label': false,
     'fenced-code-in-quote': false,
     typograph: true,
-    'validate-internal-links': false
+    'validate-internal-links': false,
+    'checking-frontmatter-tags': true
   }
 
   let config
