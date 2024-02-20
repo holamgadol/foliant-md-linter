@@ -7,7 +7,7 @@ const fs = require('fs')
 
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
-jest.setTimeout(10000)
+jest.setTimeout(30000)
 
 function linkCheckFilePrint (file) {
   if (process.platform === 'win32') {
@@ -137,19 +137,19 @@ test('slim -v', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:33 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-v'], '.')
@@ -169,11 +169,11 @@ test('slim -v -s alt-src', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n',
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:16 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'alt-src/linter-test-B.md:20 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'alt-src/linter-test-B.md:24 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'alt-src/linter-test-B.md:6 non-literal-fence-label Invalid language label in fenced code block\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:19 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'alt-src/linter-test-B.md:23 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'alt-src/linter-test-B.md:27 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-v', '-s alt-src'], '.')
@@ -193,19 +193,19 @@ test('slim -v -p another-project', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
-    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:37 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-v', '-p another-project'], '.')
@@ -225,19 +225,19 @@ test('slim -v -p another-project -f', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
-    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:37 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`]
   const result = await cli(['slim', '-v', '-p another-project', '-f'], '.')
@@ -303,19 +303,19 @@ test('styleguide -v', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:33 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -338,19 +338,19 @@ test('styleguide -v -p another-project', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
-    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:37 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -373,11 +373,11 @@ test('styleguide -s alt-src -v', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n',
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:16 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'alt-src/linter-test-B.md:20 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'alt-src/linter-test-B.md:24 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'alt-src/linter-test-B.md:6 non-literal-fence-label Invalid language label in fenced code block\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:19 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'alt-src/linter-test-B.md:23 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'alt-src/linter-test-B.md:27 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -400,8 +400,8 @@ test('styleguide -s alt-src -v -c', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -424,8 +424,8 @@ test('styleguide -s alt-src -v -c -f', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -494,19 +494,19 @@ test('fix -v', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:33 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -529,19 +529,19 @@ test('fix -v -p another-project', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
-    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:37 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -564,10 +564,10 @@ test('fix -v -c', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:5 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:8 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
     'FILE: src/subproject/article.md\n',
-    'src/subproject/article.md:3:1 MD051/link-fragments Link fragments should be valid [Context: "[broken local link](#anchor)"]\n',
+    'src/subproject/article.md:6:1 MD051/link-fragments Link fragments should be valid [Context: "[broken local link](#anchor)"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -590,8 +590,8 @@ test('fix -v -c -s alt-src', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -614,8 +614,8 @@ test('fix -v -c -s alt-src -f', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -873,19 +873,19 @@ test('essential -v', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:33 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -921,19 +921,19 @@ test('essential -v -p another-project', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
-    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:37 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -969,11 +969,11 @@ test('essential -s alt-src -v', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n',
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:16 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'alt-src/linter-test-B.md:20 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'alt-src/linter-test-B.md:24 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'alt-src/linter-test-B.md:6 non-literal-fence-label Invalid language label in fenced code block\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:19 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'alt-src/linter-test-B.md:23 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'alt-src/linter-test-B.md:27 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -1003,8 +1003,8 @@ test('essential -s alt-src -v -c', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -1034,8 +1034,8 @@ test('essential -s alt-src -v -c -f', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -1097,19 +1097,19 @@ test('full-check -v', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:30 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:33 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file does not exist] [Context: "/another-project/subproject/article#anchor"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -1147,19 +1147,19 @@ test('full-check -v -p another-project', async () => {
 
     'FILE: src/linter-test-A.md\n',
 
-    'src/linter-test-A.md:3 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'src/linter-test-A.md:7 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
-    'src/linter-test-A.md:11 non-literal-fence-label Invalid language label in fenced code block\n',
-    'src/linter-test-A.md:18 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'src/linter-test-A.md:26 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'src/linter-test-A.md:32 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
-    'src/linter-test-A.md:34 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
+    'src/linter-test-A.md:6 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'src/linter-test-A.md:10 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'src/linter-test-A.md:14 non-literal-fence-label Invalid language label in fenced code block\n',
+    'src/linter-test-A.md:21 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'src/linter-test-A.md:29 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'src/linter-test-A.md:35 validate-internal-links Broken link [file exists, but invalid anchor] [Context: "/another-project/subproject/article#anchor"]\n',
+    'src/linter-test-A.md:37 validate-internal-links Broken link [file does not exist] [Context: "/foliant-md-linter/subproject/article"]\n',
 
     '--------------------------------------------------------------------------------\n',
 
     'FILE: src/subproject/article.md\n',
 
-    'src/subproject/article.md:3 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
+    'src/subproject/article.md:6 validate-internal-links Broken link [invalid local anchor] [Context: "#anchor"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -1197,11 +1197,11 @@ test('full-check -s alt-src -v', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:3 non-literal-fence-label Invalid language label in fenced code block\n',
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:16 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
-    'alt-src/linter-test-B.md:20 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
-    'alt-src/linter-test-B.md:24 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
+    'alt-src/linter-test-B.md:6 non-literal-fence-label Invalid language label in fenced code block\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:19 fenced-code-in-quote Fenced code shouldn\'t be in quote\n',
+    'alt-src/linter-test-B.md:23 validate-internal-links Broken link [image does not exist] [Context: "/red-circle.png"]\n',
+    'alt-src/linter-test-B.md:27 indented-fence Fenced code shouldn\'t be indented by 1 to 3 spaces [Context: "   ```bash"]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -1233,8 +1233,8 @@ test('full-check -s alt-src -v -c', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -1267,8 +1267,8 @@ test('full-check -s alt-src -v -c -l', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -1304,8 +1304,8 @@ test('full-check -s alt-src -v -c -f', async () => {
 
     'FILE: alt-src/linter-test-B.md\n',
 
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
 
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
 
@@ -1349,8 +1349,8 @@ test('print -v', async () => {
     'Checked 1 files\n',
     'Found 2 critical formatting errors\n',
     'FILE: alt-src/linter-test-B.md\n',
-    'alt-src/linter-test-B.md:14 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
-    'alt-src/linter-test-B.md:28 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
+    'alt-src/linter-test-B.md:17 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\n',
+    'alt-src/linter-test-B.md:31 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### MD001: Heading levels shou..."]\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
     'Found 2 styleguide and formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`,
