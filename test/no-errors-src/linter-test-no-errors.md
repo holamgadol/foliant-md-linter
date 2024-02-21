@@ -1,3 +1,8 @@
+---
+tags:
+    - none
+---
+
 # Linter test with no errors
 
 ## Heading

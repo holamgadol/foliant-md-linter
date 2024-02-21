@@ -14,7 +14,8 @@ function createConfig (mode = 'full', source = '', project = '') {
       path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
       path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
       path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links')
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
+      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
     ]
   } else {
     customRules = [
@@ -22,8 +23,8 @@ function createConfig (mode = 'full', source = '', project = '') {
       path.resolve(__dirname, '../markdownlint-rules-foliant/lib/non-literal-fence-label'),
       path.resolve(__dirname, '../markdownlint-rules-foliant/lib/fenced-code-in-quote'),
       path.resolve(__dirname, '../markdownlint-rules-foliant/lib/typograph'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/validate-internal-links')
-
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/validate-internal-links'),
+      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/frontmatter-tags-exist')
     ]
   }
 
@@ -53,7 +54,7 @@ function createConfig (mode = 'full', source = '', project = '') {
     MD031: true,
     MD032: false,
     MD033: false,
-    MD034: true,
+    MD034: false,
     MD036: true,
     MD037: true,
     MD038: true,
@@ -74,7 +75,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     'validate-internal-links': {
       src: source.length === 0 ? undefined : source,
       project: project.length === 0 ? undefined : project
-    }
+    },
+    'frontmatter-tags-exist': false
   }
 
   const configSlim = {
@@ -100,7 +102,7 @@ function createConfig (mode = 'full', source = '', project = '') {
     MD031: false,
     MD032: false,
     MD033: false,
-    MD034: true,
+    MD034: false,
     MD036: false,
     MD037: false,
     MD038: false,
@@ -122,7 +124,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     'validate-internal-links': {
       src: source.length === 0 ? undefined : source,
       project: project.length === 0 ? undefined : project
-    }
+    },
+    'frontmatter-tags-exist': false
   }
 
   const configTypograph = {
@@ -176,7 +179,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     'non-literal-fence-label': false,
     'fenced-code-in-quote': false,
     typograph: true,
-    'validate-internal-links': false
+    'validate-internal-links': false,
+    'frontmatter-tags-exist': false
   }
 
   let config
