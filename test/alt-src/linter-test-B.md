@@ -1,6 +1,8 @@
 ---
-tags: none
+tags:
+    - none
 ---
+
 # Linter test B
 
 ```non-literal-fence-label{

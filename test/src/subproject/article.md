@@ -1,6 +1,8 @@
 ---
-tags: none
+tags:
+    - none
 ---
+
 # Article
 
 [broken local link](#anchor)
