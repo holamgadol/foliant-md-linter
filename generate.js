@@ -54,7 +54,7 @@ function createConfig (mode = 'full', source = '', project = '') {
     MD031: true,
     MD032: false,
     MD033: false,
-    MD034: true,
+    MD034: false,
     MD036: true,
     MD037: true,
     MD038: true,
@@ -76,7 +76,7 @@ function createConfig (mode = 'full', source = '', project = '') {
       src: source.length === 0 ? undefined : source,
       project: project.length === 0 ? undefined : project
     },
-    'frontmatter-tags-exist': true
+    'frontmatter-tags-exist': false
   }
 
   const configSlim = {
@@ -102,7 +102,7 @@ function createConfig (mode = 'full', source = '', project = '') {
     MD031: false,
     MD032: false,
     MD033: false,
-    MD034: true,
+    MD034: false,
     MD036: false,
     MD037: false,
     MD038: false,
@@ -180,7 +180,7 @@ function createConfig (mode = 'full', source = '', project = '') {
     'fenced-code-in-quote': false,
     typograph: true,
     'validate-internal-links': false,
-    'frontmatter-tags-exist': true
+    'frontmatter-tags-exist': false
   }
 
   let config
