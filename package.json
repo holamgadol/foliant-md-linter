@@ -22,7 +22,7 @@
     "commander": "^9.1.0",
     "markdown-link-check": "~3.10.3",
     "markdownlint-cli2": "^0.6.0",
-    "markdownlint-rules-foliant": "holamgadol/markdownlint-foliant-rules#feat-frontmatter-tags"
+    "markdownlint-rules-foliant": "latest"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
