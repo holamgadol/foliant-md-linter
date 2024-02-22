@@ -30,7 +30,7 @@ physics–science
 
 ![invalid link to image](/red-circle.png)
 
-[Broken external link](https://example.co/)
+[Broken external link](https://github.com/holamgadol/foliant-md-lint)
 
 [absolute link to file](/another-project/subproject/article)
 

@@ -4,5 +4,6 @@
       "pattern": "^(?!http).+"
     }
   ],
-  "timeout": "20s"
+  "timeout": "20s",
+  "aliveStatusCodes": [200, 206, 0, 204, 401, 406]
 }
