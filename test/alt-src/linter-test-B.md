@@ -24,7 +24,7 @@ physics–science
 
 ![invalid link to image](/red-circle.png)
 
-[Broken external link](https://example.rus/)
+[Broken external link](https://github.com/holamgadol/foliant-md-linters)
 
    ```bash
    indented-fence

@@ -7,4 +7,4 @@ tags:
 
 [broken local link](#anchor)
 
-[broken external link](https://example.coms/)
+[broken external link](https://github.com/holamgadol/foliant-md-linte)

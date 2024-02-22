@@ -768,13 +768,13 @@ test('urls -v', async () => {
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-lint', 'https://github.com/holamgadol/foliant-md-linte')} → Status: 404\n`,
 
     '--------------------------------------------------------------------------------\n',
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-linte', 'https://github.com/holamgadol/foliant-md-lint')} → Status: 404\n`,
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['urls', '-v'], '.')
@@ -792,7 +792,7 @@ test('urls -v -s alt-src', async () => {
 
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
 
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['urls', '-v', '-s alt-src'], '.')
@@ -810,7 +810,7 @@ test('urls -v -s alt-src -f', async () => {
 
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
 
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['urls', '-v', '-s alt-src', '-f'], '.')
@@ -895,13 +895,13 @@ test('essential -v', async () => {
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-lint', 'https://github.com/holamgadol/foliant-md-linte')} → Status: 404\n`,
 
     '--------------------------------------------------------------------------------\n',
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-linte', 'https://github.com/holamgadol/foliant-md-lint')} → Status: 404\n`,
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-v'], '.')
@@ -943,13 +943,13 @@ test('essential -v -p another-project', async () => {
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-lint', 'https://github.com/holamgadol/foliant-md-linte')} → Status: 404\n`,
 
     '--------------------------------------------------------------------------------\n',
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-linte', 'https://github.com/holamgadol/foliant-md-lint')} → Status: 404\n`,
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-v', '-p another-project'], '.')
@@ -983,7 +983,7 @@ test('essential -s alt-src -v', async () => {
 
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
 
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-s alt-src', '-v'], '.')
@@ -1014,7 +1014,7 @@ test('essential -s alt-src -v -c', async () => {
 
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
 
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-s alt-src', '-v', '-c'], '.')
@@ -1045,7 +1045,7 @@ test('essential -s alt-src -v -c -f', async () => {
 
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
 
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['essential', '-s alt-src', '-v', '-c', '-f'], '.')
@@ -1122,13 +1122,13 @@ test('full-check -v', async () => {
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-lint', 'https://github.com/holamgadol/foliant-md-linte')} → Status: 404\n`,
 
     '--------------------------------------------------------------------------------\n',
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-linte', 'https://github.com/holamgadol/foliant-md-lint')} → Status: 404\n`,
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-v'], '.')
@@ -1172,13 +1172,13 @@ test('full-check -v -p another-project', async () => {
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//linter-test-A.md', 'src//subproject/article.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.co/', 'https://example.coms/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-lint', 'https://github.com/holamgadol/foliant-md-linte')} → Status: 404\n`,
 
     '--------------------------------------------------------------------------------\n',
 
     `FILE: ${linkCheckFilePrint(linuxSwapString('src//subproject/article.md', 'src//linter-test-A.md'))}\n`,
 
-    `  [✖] ${linuxSwapString('https://example.coms/', 'https://example.co/')} → Status: 0\n`,
+    `  [✖] ${linuxSwapString('https://github.com/holamgadol/foliant-md-linte', 'https://github.com/holamgadol/foliant-md-lint')} → Status: 404\n`,
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-v', '-p another-project'], '.')
@@ -1214,7 +1214,7 @@ test('full-check -s alt-src -v', async () => {
 
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
 
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-s alt-src', '-v'], '.')
@@ -1247,7 +1247,7 @@ test('full-check -s alt-src -v -c', async () => {
 
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
 
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-s alt-src', '-v', '-c'], '.')
@@ -1281,7 +1281,7 @@ test('full-check -s alt-src -v -c -l', async () => {
 
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
 
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`,
     `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}\n`,
@@ -1318,7 +1318,7 @@ test('full-check -s alt-src -v -c -f', async () => {
 
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
 
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['full-check', '-s alt-src', '-v', '-c', '-f'], '.')
@@ -1356,7 +1356,7 @@ test('print -v', async () => {
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_full.log')}\n`,
     'Found 1 broken external links\n',
     `FILE: ${linkCheckFilePrint('alt-src//linter-test-B.md')}\n`,
-    '  [✖] https://example.rus/ → Status: 0\n',
+    '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`]
   const result = await cli(['print', '-v'], '.', false)
   console.log(result)

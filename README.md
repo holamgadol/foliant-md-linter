@@ -176,13 +176,13 @@ Found 2 broken external links
 
 FILE: src//linter-test-A.md
 
-  [✖] https://example.co/ → Status: 0
+  [✖] https://github.com/holamgadol/foliant-md-lint → Status: 404
 
 --------------------------------------------------------------------------------
 
 FILE: src//subproject/article.md
 
-  [✖] https://example.coms/ → Status: 0
+  [✖] https://github.com/holamgadol/foliant-md-linte → Status: 404
 
 Full markdown-link-check log see in /Users/user/github/foliant-md-linter/.markdownlinkcheck.log
 ```
