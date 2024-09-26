@@ -1385,6 +1385,7 @@ function cli (args, cwd, clearLogs = true) {
   if (clearLogs) {
     clearLogsCmd = (isWin === true) ? 'DEL /Q /F ".markdownlin*" &&' : 'rm -f .markdownlin* &&'
   }
+  console.log(`isWin: ${isWin}`, `args: ${args}`, `cwd: ${cwd}`, 'command', `${clearLogsCmd} node ${path.resolve('./linter')} ${args.join(' ')}`)
   return new Promise(resolve => {
     exec(`${clearLogsCmd} node ${path.resolve('./linter')} ${args.join(' ')}`,
       { cwd },
