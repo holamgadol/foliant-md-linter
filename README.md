@@ -101,8 +101,6 @@ Run _foliant-md-linter_ from the project root with following commands and option
 
     - `--includes-map` - set the path to the includes map (default: `./includes_map.json`)
 
-    - `--ext-links-check <command-for-get-list>` - specify command for [get list of files](#ext-links-check).
-
 - `essential` check md files for critical formatting errors with markdownlint and validate external links ith markdown-link-check
   - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`, `--includes-map`,`--ext-links-check`
 - `urls` validate external links with markdown-link-check
@@ -209,24 +207,4 @@ and use it for the next _markdownlint_ runs by `-c` option
 
 ```bash
 $ npx foliant-md-linter full-check -c
-```
-
-### Checking external links only in the file list {#ext-links-check}
-
-Checking external links takes a long time, so you can run the external link check only in a given list of files.
-In this case, internal links will be checked in all files.
-
-Example, commands to check external links only in modified files.
-The list of modified files was obtained by the `git` command comparing the current branch with `origin/master`:
-
-**Unix**
-
-```bash
-$ npx foliant-md-linter full-check -v -p project-name -l --ext-links-check 'git diff --name-only HEAD origin/master | grep .md$'
-```
-
-**Windows**
-
-```bash
-$ npx foliant-md-linter full-check -v -p project-name -l --ext-links-check 'git diff --name-only HEAD origin/master | findstr .md'
 ```
