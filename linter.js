@@ -132,7 +132,13 @@ function writeLog (logFile) {
   return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
-const commandsGen = function (src = defaultSrc, customConfig = false, project = '', includesMap = '') {
+const commandsGen = function (src = defaultSrc, customConfig = false, project = '', includesMap = '', listOfFiles = '') {
+  let findCommandUnix = `${src}/ -type f -name '*.md'`
+  let findCommandWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md`
+  if (listOfFiles !== '*.md' && listOfFiles !== '') {
+    findCommandUnix = `$(${listOfFiles})`
+    findCommandWin = `${listOfFiles}`
+  }
   const commands = {}
   const and = (isWin === true) ? '&' : ';'
   commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} --includes-map ${includesMap} -p "${project}"` : 'echo "using custom config"'
@@ -142,8 +148,8 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
   commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
   commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
   commands.markdownlintSrcTypograph = `${commands.createTypographMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
-  commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
-  commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
+  commands.markdownlinkcheckSrcUnix = `find ${findCommandUnix} -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  commands.markdownlinkcheckSrcWin = `${findCommandWin} /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
   commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
   commands.lintSrcEssential = `${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
   commands.lintSrcFull = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
@@ -215,6 +221,7 @@ const debugOption = new Option('-d, --debug', 'print executing command').default
 const allowfailureOption = new Option('-f, --allowfailure', 'allow exit with failure if errors').default(false)
 const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint config after execution').default(false)
 const includesMap = new Option('--includes-map <includes-map>', 'includes map path').default('./includes_map.json')
+const listOfFiles = new Option('--ext-links-check <list-of-files>', 'the list of files to be checked').default('*.md')
 
 program
   .name('foliant-md-linter')
@@ -231,8 +238,9 @@ program.command('full-check')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMap)
+  .addOption(listOfFiles)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.extLinksCheck).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('essential')
@@ -245,8 +253,9 @@ program.command('essential')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMap)
+  .addOption(listOfFiles)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.extLinksCheck).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('urls')
@@ -270,8 +279,9 @@ program.command('styleguide')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMap)
+  .addOption(listOfFiles)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.extLinksCheck).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('slim')
@@ -284,8 +294,9 @@ program.command('slim')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMap)
+  .addOption(listOfFiles)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.extLinksCheck).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('fix')
@@ -298,8 +309,9 @@ program.command('fix')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMap)
+  .addOption(listOfFiles)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.extLinksCheck).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('typograph')
@@ -328,7 +340,7 @@ program.command('create-full-config')
   .addOption(projectOption)
   .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.createFullMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.extLinksCheck).commands.createFullMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.command('create-slim-config')
@@ -337,7 +349,7 @@ program.command('create-slim-config')
   .addOption(projectOption)
   .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.createSlimMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.extLinksCheck).commands.createSlimMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.command('create-typograph-config')
@@ -346,7 +358,7 @@ program.command('create-typograph-config')
   .addOption(projectOption)
   .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.createTypographMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.extLinksCheck).commands.createTypographMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.parse()
