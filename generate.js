@@ -6,27 +6,15 @@ const fs = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
 
-function createConfig (mode = 'full', source = '', project = '') {
-  let customRules
-  if (fs.existsSync(path.join(__dirname, '/node_modules/markdownlint-rules-foliant/package.json'))) {
-    customRules = [
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/indented-fence'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
-    ]
-  } else {
-    customRules = [
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/indented-fence'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/non-literal-fence-label'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/fenced-code-in-quote'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/typograph'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/validate-internal-links'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/frontmatter-tags-exist')
-    ]
-  }
+function createConfig (mode = 'full', source = '', project = '', includesMap = '') {
+  const customRules = [
+    'markdownlint-rules-foliant/lib/indented-fence',
+    'markdownlint-rules-foliant/lib/non-literal-fence-label',
+    'markdownlint-rules-foliant/lib/fenced-code-in-quote',
+    'markdownlint-rules-foliant/lib/typograph',
+    'markdownlint-rules-foliant/lib/validate-internal-links',
+    'markdownlint-rules-foliant/lib/frontmatter-tags-exist'
+  ]
 
   const configFull = {
     MD001: true,
@@ -74,7 +62,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     typograph: true,
     'validate-internal-links': {
       src: source.length === 0 ? undefined : source,
-      project: project.length === 0 ? undefined : project
+      project: project.length === 0 ? undefined : project,
+      includesMap: project.length === 0 ? undefined : includesMap
     },
     'frontmatter-tags-exist': false
   }
@@ -123,7 +112,8 @@ function createConfig (mode = 'full', source = '', project = '') {
     typograph: false,
     'validate-internal-links': {
       src: source.length === 0 ? undefined : source,
-      project: project.length === 0 ? undefined : project
+      project: project.length === 0 ? undefined : project,
+      includesMap: project.length === 0 ? undefined : includesMap
     },
     'frontmatter-tags-exist': false
   }
@@ -209,8 +199,9 @@ program
   .option('-m, --mode <mode>', 'full, slim, typograph or default config', 'full')
   .option('-s, --source <source>', 'relative path to source directory', '')
   .option('-p, --project <project>', 'project name', '')
+  .option('--includes-map <includes-map>', 'includes map path', '')
 
 program.parse()
 
 const options = program.opts()
-createConfig(options.mode, options.source, options.project)
+createConfig(options.mode, options.source, options.project, options.includesMap)
