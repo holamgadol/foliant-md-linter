@@ -21,12 +21,7 @@ const defaultConfig = path.resolve(cwd, '.markdownlint-cli2.jsonc')
 const markdownLintLogs = /\.markdownlint_.*\.log/
 const defaultSrc = 'src'
 
-let execPath = path.resolve(__dirname, '../.bin/')
 let exitCode = 0
-
-if (fs.existsSync(path.join(__dirname, '/node_modules/.bin/markdownlint-cli2'))) {
-  execPath = path.join(__dirname, '/node_modules/.bin/')
-}
 
 function printErrors (logFile) {
   let regex
@@ -144,11 +139,11 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
   commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} --includes-map ${includesMap} -p "${project}"` : 'echo "using custom config"'
   commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} --includes-map ${includesMap} -p "${project}"` : 'echo "using custom config"'
   commands.createTypographMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m typograph -s ${src} -p "${project}"` : 'echo "using custom config"'
-  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
-  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
-  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
-  commands.markdownlintSrcTypograph = `${commands.createTypographMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
-  commands.markdownlinkcheckSrcUnix = `find ${findCommandUnix} -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
+  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
+  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
+  commands.markdownlintSrcTypograph = `${commands.createTypographMarkdownlintConfig} && markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
+  commands.markdownlinkcheckSrcUnix = `find ${findCommandUnix} -print0 | xargs -0 -n1 markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `${findCommandWin} /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
   commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
   commands.lintSrcEssential = `${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
@@ -226,7 +221,7 @@ const listOfFiles = new Option('--ext-links-check <list-of-files>', 'the list of
 program
   .name('foliant-md-linter')
   .description('CLI tool for linting Foliant markdown sources')
-  .version('0.1.10')
+  .version('0.1.13')
 
 program.command('full-check')
   .description('Check md files with markdownlint and markdown-link-check')
