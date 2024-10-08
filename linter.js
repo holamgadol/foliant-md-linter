@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+// Third-party modules
 const {
   Command,
   Option
@@ -9,18 +10,38 @@ const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
 const { unlink } = require('fs')
+const YAML = require('yaml')
+
+// The subprocess
 const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
 const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
 
+// The log paths
 const markdownLintSlimLog = '.markdownlint_slim.log'
 const markdownLintFullLog = '.markdownlint_full.log'
 const markdownLinkCheckLog = '.markdownlinkcheck.log'
+const genIncludesMapLog = '.gen_includes_map.log'
+
+// Default paths
 const defaultConfig = path.resolve(cwd, '.markdownlint-cli2.jsonc')
 const markdownLintLogs = /\.markdownlint_.*\.log/
 const defaultSrc = 'src'
+const defaultIncludesMap = './includes_map.json'
+const usedFoliantConfig = './only_includes_map.yml'
 
+// Options
+const verboseOption = new Option('-v, --verbose', 'Print full linting results').default(false)
+const sourceOption = new Option('-s, --source <path-to-sources>', 'source directory').default(defaultSrc)
+const configOption = new Option('-c, --config', 'use custom markdownlint config').default(false)
+const projectOption = new Option('-p, --project <project-name>', 'project name').default('')
+const debugOption = new Option('-d, --debug', 'print executing command').default(false)
+const allowfailureOption = new Option('-f, --allowfailure', 'allow exit with failure if errors').default(false)
+const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint config after execution').default(false)
+const includesMapOption = new Option('--includes-map', 'use includes map (foliant is needed)').default(false)
+
+// The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
 let exitCode = 0
 
@@ -28,6 +49,7 @@ if (fs.existsSync(path.join(__dirname, '/node_modules/.bin/markdownlint-cli2')))
   execPath = path.join(__dirname, '/node_modules/.bin/')
 }
 
+// Utils
 function printErrors (logFile) {
   let regex
   let file
@@ -132,11 +154,18 @@ function writeLog (logFile) {
   return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
-const commandsGen = function (src = defaultSrc, customConfig = false, project = '', includesMap = '') {
+const commandsGen = function (src = defaultSrc, customConfig = false, project = '', includesMap = false) {
   const commands = {}
   const and = (isWin === true) ? '&' : ';'
-  commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} --includes-map ${includesMap} -p "${project}"` : 'echo "using custom config"'
-  commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} --includes-map ${includesMap} -p "${project}"` : 'echo "using custom config"'
+  commands.createIncludesMap = ''
+  let includesMapArg = ''
+  if (includesMap) {
+    createConfigIncludesMap()
+    commands.createIncludesMap = `foliant make --config ${usedFoliantConfig} pre ${writeLog(genIncludesMapLog)} &`
+    includesMapArg = `--includes-map ${defaultIncludesMap}`
+  }
+  commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} ${includesMapArg} -p "${project}"` : 'echo "using custom config"'
+  commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} ${includesMapArg} -p "${project}"` : 'echo "using custom config"'
   commands.createTypographMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m typograph -s ${src} -p "${project}"` : 'echo "using custom config"'
   commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
   commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
@@ -145,8 +174,8 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
   commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
   commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
-  commands.lintSrcEssential = `${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
-  commands.lintSrcFull = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
+  commands.lintSrcEssential = `${commands.createIncludesMap} ${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
+  commands.lintSrcFull = `${commands.createIncludesMap} ${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
   return {
     commands
   }
@@ -172,6 +201,7 @@ function checkExitCode (allowfailure) {
 function afterLint (verbose, clearconfig, allowfailure) {
   printLintResults(verbose)
   clearConfig(clearconfig)
+  clearIncludesMap()
   checkExitCode(allowfailure)
 }
 
@@ -207,15 +237,46 @@ function execute (command, verbose = false, debug = false, allowfailure = false,
   }
 }
 
-const verboseOption = new Option('-v, --verbose', 'Print full linting results').default(false)
-const sourceOption = new Option('-s, --source <path-to-sources>', 'source directory').default(defaultSrc)
-const configOption = new Option('-c, --config', 'use custom markdownlint config').default(false)
-const projectOption = new Option('-p, --project <project-name>', 'project name').default('')
-const debugOption = new Option('-d, --debug', 'print executing command').default(false)
-const allowfailureOption = new Option('-f, --allowfailure', 'allow exit with failure if errors').default(false)
-const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint config after execution').default(false)
-const includesMap = new Option('--includes-map <includes-map>', 'includes map path').default('./includes_map.json')
+function createConfigIncludesMap () {
+  const onlyIncludesMapConf = YAML.parse(fs.readFileSync('./foliant.yml', 'utf8'))
 
+  // Delete all keys except pre
+  Object.keys(onlyIncludesMapConf.backend_config).forEach(n => n !== 'pre' && delete onlyIncludesMapConf.backend_config[n])
+
+  // Redefining the list of preprocessors
+  onlyIncludesMapConf.preprocessors = [
+    {
+      includes: {
+        includes_map: [
+          'anchors'
+        ]
+      }
+    },
+    {
+      runcommands: {
+        commands: [
+          'cp ${WORKING_DIR}/static/includes_map.json ./' // eslint-disable-line no-template-curly-in-string
+        ],
+        targets: [
+          'pre'
+        ]
+      }
+    }
+  ]
+  fs.writeFile(usedFoliantConfig, YAML.stringify(onlyIncludesMapConf), (data) => { console.log(data) })
+  console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated`)
+}
+
+function clearIncludesMap () {
+  if (fs.existsSync(usedFoliantConfig)) {
+    fs.rm(usedFoliantConfig, (data) => { console.log(data) })
+  }
+  if (fs.existsSync(defaultIncludesMap)) {
+    fs.rm(defaultIncludesMap, (data) => { console.log(data) })
+  }
+}
+
+// Variants of program execution
 program
   .name('foliant-md-linter')
   .description('CLI tool for linting Foliant markdown sources')
@@ -230,9 +291,9 @@ program.command('full-check')
   .addOption(debugOption)
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
-  .addOption(includesMap)
+  .addOption(includesMapOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
   })
 
 program.command('essential')
@@ -244,9 +305,9 @@ program.command('essential')
   .addOption(debugOption)
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
-  .addOption(includesMap)
+  .addOption(includesMapOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
   })
 
 program.command('urls')
@@ -269,7 +330,7 @@ program.command('styleguide')
   .addOption(debugOption)
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
-  .addOption(includesMap)
+  .addOption(includesMapOption)
   .action((options) => {
     execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
@@ -283,9 +344,9 @@ program.command('slim')
   .addOption(debugOption)
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
-  .addOption(includesMap)
+  .addOption(includesMapOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
   })
 
 program.command('fix')
@@ -297,9 +358,9 @@ program.command('fix')
   .addOption(debugOption)
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
-  .addOption(includesMap)
+  .addOption(includesMapOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
   })
 
 program.command('typograph')
