@@ -39,7 +39,7 @@ const debugOption = new Option('-d, --debug', 'print executing command').default
 const allowfailureOption = new Option('-f, --allowfailure', 'allow exit with failure if errors').default(false)
 const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint config after execution').default(false)
 const includesMapOption = new Option('--includes-map', 'use includes map (foliant is needed)').default(false)
-const foliantConfigOption = new Option('--foliant-config', 'the configuration file is a foliant from which chapters').default('foliat.yml')
+const foliantConfigOption = new Option('--foliant-config', 'the configuration file is a foliant from which chapters').default('./foliant.yml')
 
 // The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -167,15 +167,15 @@ const commandsGen = function (src = defaultSrc, customConfig = false, project = 
   commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} ${includesMapArg} -p "${project}"` : 'echo "using custom config"'
   commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} ${includesMapArg} -p "${project}"` : 'echo "using custom config"'
   commands.createTypographMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m typograph -s ${src} -p "${project}"` : 'echo "using custom config"'
-  commands.markdownlintSrcSlim = `${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
+  commands.markdownlintSrcSlim = `${commands.createIncludesMap} ${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintSlimLog)}`
   commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
   commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
   commands.markdownlintSrcTypograph = `${commands.createTypographMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${writeLog(markdownLintFullLog)}`
   commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
   commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
-  commands.lintSrcEssential = `${commands.createIncludesMap} ${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
-  commands.lintSrcFull = `${commands.createIncludesMap} ${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
+  commands.lintSrcEssential = `${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
+  commands.lintSrcFull = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
   return {
     commands
   }
