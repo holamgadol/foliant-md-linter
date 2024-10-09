@@ -10,7 +10,6 @@ const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
 const { unlink } = require('fs')
-const YAML = require('yaml')
 
 // The subprocess
 const program = new Command()
@@ -40,6 +39,7 @@ const debugOption = new Option('-d, --debug', 'print executing command').default
 const allowfailureOption = new Option('-f, --allowfailure', 'allow exit with failure if errors').default(false)
 const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint config after execution').default(false)
 const includesMapOption = new Option('--includes-map', 'use includes map (foliant is needed)').default(false)
+const foliantConfigOption = new Option('--foliant-config', 'the configuration file is a foliant from which chapters').default('foliat.yml')
 
 // The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -154,13 +154,13 @@ function writeLog (logFile) {
   return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
-const commandsGen = function (src = defaultSrc, customConfig = false, project = '', includesMap = false) {
+const commandsGen = function (src = defaultSrc, customConfig = false, project = '', includesMap = false, foliantConfig = 'foliant.yml') {
   const commands = {}
   const and = (isWin === true) ? '&' : ';'
   commands.createIncludesMap = ''
   let includesMapArg = ''
   if (includesMap) {
-    createConfigIncludesMap()
+    createConfigIncludesMap(foliantConfig)
     commands.createIncludesMap = `foliant make --config ${usedFoliantConfig} pre ${writeLog(genIncludesMapLog)} &`
     includesMapArg = `--includes-map ${defaultIncludesMap}`
   }
@@ -237,33 +237,24 @@ function execute (command, verbose = false, debug = false, allowfailure = false,
   }
 }
 
-function createConfigIncludesMap () {
-  const onlyIncludesMapConf = YAML.parse(fs.readFileSync('./foliant.yml', 'utf8'))
+function createConfigIncludesMap (foliantConfig) {
+  /* eslint-disable no-useless-escape */
+  const onlyIncludesMapConf = `title: !include ${foliantConfig}#title
+chapters: !include ${foliantConfig}#chapters
+preprocessors:
+  - includes:
+      includes_map:
+        - anchors
+  - runcommands:
+      commands:
+        - cp $\{WORKING_DIR\}/static/includes_map.json ./
+      targets:
+        - pre
+backend_config: !include ${foliantConfig}#backend_config
+`
+  /* eslint-enable no-useless-escape */
 
-  // Delete all keys except pre
-  Object.keys(onlyIncludesMapConf.backend_config).forEach(n => n !== 'pre' && delete onlyIncludesMapConf.backend_config[n])
-
-  // Redefining the list of preprocessors
-  onlyIncludesMapConf.preprocessors = [
-    {
-      includes: {
-        includes_map: [
-          'anchors'
-        ]
-      }
-    },
-    {
-      runcommands: {
-        commands: [
-          'cp ${WORKING_DIR}/static/includes_map.json ./' // eslint-disable-line no-template-curly-in-string
-        ],
-        targets: [
-          'pre'
-        ]
-      }
-    }
-  ]
-  fs.writeFile(usedFoliantConfig, YAML.stringify(onlyIncludesMapConf), (data) => { console.log(data) })
+  fs.writeFile(usedFoliantConfig, onlyIncludesMapConf, (data) => { console.log(data) })
   console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated`)
 }
 
@@ -292,8 +283,9 @@ program.command('full-check')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMapOption)
+  .addOption(foliantConfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
   })
 
 program.command('essential')
@@ -306,8 +298,9 @@ program.command('essential')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMapOption)
+  .addOption(foliantConfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
   })
 
 program.command('urls')
@@ -331,8 +324,9 @@ program.command('styleguide')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMapOption)
+  .addOption(foliantConfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
   })
 
 program.command('slim')
@@ -345,8 +339,9 @@ program.command('slim')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMapOption)
+  .addOption(foliantConfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
   })
 
 program.command('fix')
@@ -359,8 +354,9 @@ program.command('fix')
   .addOption(allowfailureOption)
   .addOption(clearconfigOption)
   .addOption(includesMapOption)
+  .addOption(foliantConfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig, options.mergeLogs)
   })
 
 program.command('typograph')
@@ -389,7 +385,7 @@ program.command('create-full-config')
   .addOption(projectOption)
   .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.createFullMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.createFullMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.command('create-slim-config')
@@ -398,7 +394,7 @@ program.command('create-slim-config')
   .addOption(projectOption)
   .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.createSlimMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.createSlimMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.command('create-typograph-config')
@@ -407,7 +403,7 @@ program.command('create-typograph-config')
   .addOption(projectOption)
   .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap).commands.createTypographMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.createTypographMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.parse()
