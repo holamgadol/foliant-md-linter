@@ -85,21 +85,21 @@ if you haven't installed it yet:
 
 Run _foliant-md-linter_ from the project root with following commands and options:
 
-- `full-check` - check md files with markdownlint and markdown-link-check
-    - `-v`, `--verbose` - print full linting results (default: false)
-    - `-s`, `--source <path-to-sources>` - specify source directory (default: _src_)
-    - `-c`, `--config` - do not create a new markdownlint config file and use default or one in root directory instead (default: false)
-    - `-p`, `--project <project-name>` - specify project name
-    - `-d`, `--debug` - print executing command (default: false)
-    - `-f`, `--allowfailure` - allow exit with failure if errors (default: false)
+- `full-check` – check md files with markdownlint and markdown-link-check
+    - `-v`, `--verbose` – print full linting results (default: false)
+    - `-s`, `--source <path-to-sources>` – specify source directory (default: _src_)
+    - `-c`, `--config` – do not create a new markdownlint config file and use default or one in root directory instead (default: false)
+    - `-p`, `--project <project-name>` – specify project name
+    - `-d`, `--debug` – print executing command (default: false)
+    - `-f`, `--allowfailure` – allow exit with failure if errors (default: false)
 
       _helpful in CI/CD, as you can cause pipelines to fail in case of linting errors_
 
-    - `-l`, `--clearconfig` - remove markdownlint config after execution (default: false)
+    - `-l`, `--clearconfig` – remove markdownlint config after execution (default: false)
 
       _helpful within docker, otherwise annoying bugs are occurred with the markdownlint extension for VSCode_
 
-    - `--includes-map` - set the path to the includes map (default: `./includes_map.json`)
+    - `--includes-map` – set the path to the includes map (default: `./includes_map.json`)
 
 - `essential` check md files for critical formatting errors with markdownlint and validate external links ith markdown-link-check
   - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`, `--includes-map`,`--ext-links-check`
@@ -121,6 +121,8 @@ Run _foliant-md-linter_ from the project root with following commands and option
     - `-s`, `-p`, `-d`
 - `create-typograph-config` create typograph config for typograph errors check
     - `-s`, `-p`, `-d`
+
+`.markdownlintignore` – an exception file, each line of which can contain a glob.
 
 ### Examples
 
