@@ -83,7 +83,7 @@ test('slim', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('slim -l', async () => {
@@ -97,7 +97,7 @@ test('slim -l', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('slim -c', async () => {
@@ -110,7 +110,7 @@ test('slim -c', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('slim -l -c', async () => {
@@ -118,14 +118,13 @@ test('slim -l -c', async () => {
     'Checked 2 files\n',
     'Found 3 critical formatting errors\n',
     `Full markdownlint log see in ${path.join(cwd, '.markdownlint_slim.log')}\n`,
-    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}\n`,
-    `${path.join(cwd, '.markdownlint-cli2.jsonc is absent')}\n`]
+    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}\n`]
   const result = await cli(['slim', '-l', '-c'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('slim -v', async () => {
@@ -157,7 +156,7 @@ test('slim -v', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('slim -v -s alt-src', async () => {
@@ -181,7 +180,7 @@ test('slim -v -s alt-src', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('slim -v -p another-project', async () => {
@@ -213,7 +212,7 @@ test('slim -v -p another-project', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('slim -v -p another-project -f', async () => {
@@ -245,7 +244,7 @@ test('slim -v -p another-project -f', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(1)
+  expect(result.code).toEqual(0)
 })
 
 test('slim -v -s no-errors-src -f', async () => {
@@ -274,7 +273,7 @@ test('styleguide', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('styleguide -l', async () => {
@@ -291,7 +290,7 @@ test('styleguide -l', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('styleguide -v', async () => {
@@ -326,7 +325,7 @@ test('styleguide -v', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('styleguide -v -p another-project', async () => {
@@ -361,7 +360,7 @@ test('styleguide -v -p another-project', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('styleguide -s alt-src -v', async () => {
@@ -388,7 +387,7 @@ test('styleguide -s alt-src -v', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('styleguide -s alt-src -v -c', async () => {
@@ -412,7 +411,7 @@ test('styleguide -s alt-src -v -c', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('styleguide -s alt-src -v -c -f', async () => {
@@ -436,7 +435,7 @@ test('styleguide -s alt-src -v -c -f', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(1)
+  expect(result.code).toEqual(0)
 })
 
 test('styleguide -s no-errors-src -v -c -f', async () => {
@@ -466,7 +465,7 @@ test('fix', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('fix -l', async () => {
@@ -482,7 +481,7 @@ test('fix -l', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('fix -v', async () => {
@@ -517,7 +516,7 @@ test('fix -v', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('fix -v -p another-project', async () => {
@@ -552,7 +551,7 @@ test('fix -v -p another-project', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('fix -v -c', async () => {
@@ -578,7 +577,7 @@ test('fix -v -c', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('fix -v -c -s alt-src', async () => {
@@ -602,7 +601,7 @@ test('fix -v -c -s alt-src', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('fix -v -c -s alt-src -f', async () => {
@@ -626,7 +625,7 @@ test('fix -v -c -s alt-src -f', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(1)
+  expect(result.code).toEqual(0)
 })
 
 test('fix -v -c -s no-errors-src -f', async () => {
@@ -707,7 +706,7 @@ test('typograph -v -c', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('typograph -v -c -s alt-src', async () => {
@@ -720,7 +719,7 @@ test('typograph -v -c -s alt-src', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('typograph -v -c -s alt-src -f', async () => {
@@ -733,7 +732,7 @@ test('typograph -v -c -s alt-src -f', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(1)
+  expect(result.code).toEqual(0)
 })
 
 test('typograph -v -c -s no-errors-src -f', async () => {
@@ -757,7 +756,7 @@ test('urls', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('urls -v', async () => {
@@ -781,7 +780,7 @@ test('urls -v', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('urls -v -s alt-src', async () => {
@@ -799,7 +798,7 @@ test('urls -v -s alt-src', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('urls -v -s alt-src -f', async () => {
@@ -817,7 +816,7 @@ test('urls -v -s alt-src -f', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(1)
+  expect(result.code).toEqual(0)
 })
 
 test('urls -v -s no-errors-src -f', async () => {
@@ -844,7 +843,7 @@ test('essential', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('essential -l', async () => {
@@ -861,7 +860,7 @@ test('essential -l', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('essential -v', async () => {
@@ -909,7 +908,7 @@ test('essential -v', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('essential -v -p another-project', async () => {
@@ -957,7 +956,7 @@ test('essential -v -p another-project', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('essential -s alt-src -v', async () => {
@@ -991,7 +990,7 @@ test('essential -s alt-src -v', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('essential -s alt-src -v -c', async () => {
@@ -1022,7 +1021,7 @@ test('essential -s alt-src -v -c', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('essential -s alt-src -v -c -f', async () => {
@@ -1053,7 +1052,7 @@ test('essential -s alt-src -v -c -f', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(1)
+  expect(result.code).toEqual(0)
 })
 
 test('essential -s no-errors-src -v -c -f', async () => {
@@ -1255,7 +1254,7 @@ test('full-check -s alt-src -v -c', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('full-check -s alt-src -v -c -l', async () => {
@@ -1284,15 +1283,13 @@ test('full-check -s alt-src -v -c -l', async () => {
     '  [✖] https://github.com/holamgadol/foliant-md-linters → Status: 404\n',
 
     `Full markdown-link-check log see in ${path.join(cwd, '.markdownlinkcheck.log')}\n`,
-    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}\n`,
-    `${path.join(cwd, '.markdownlint-cli2.jsonc is absent')}\n`
-  ]
+    `removing ${path.join(cwd, '.markdownlint-cli2.jsonc ...')}\n`]
   const result = await cli(['full-check', '-s alt-src', '-v', '-c', '-l'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(false)
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
+  expect(result.code).toEqual(1)
 })
 
 test('full-check -s alt-src -v -c -f', async () => {
@@ -1326,7 +1323,7 @@ test('full-check -s alt-src -v -c -f', async () => {
   console.log(result)
 
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(1)
+  expect(result.code).toEqual(0)
 })
 
 test('print', async () => {
