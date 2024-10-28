@@ -14,15 +14,16 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "jest",
+    "test": "jest --runInBand",
     "prepare": "husky install",
     "validate": "npm run lint && npm test"
   },
   "dependencies": {
-    "commander": "^9.1.0",
+    "commander": "^9.5.0",
     "markdown-link-check": "~3.10.3",
     "markdownlint-cli2": "^0.6.0",
-    "markdownlint-rules-foliant": "latest"
+    "markdownlint-rules-foliant": "latest",
+    "uuid": "^11.0.1"
   },
   "devDependencies": {
     "eslint": "^7.32.0",

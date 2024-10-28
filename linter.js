@@ -5,42 +5,43 @@ const {
   Command,
   Option
 } = require('commander')
-const { exec, spawn } = require('child_process')
+const { exec, spawn, execSync } = require('child_process')
 const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
 const { unlink } = require('fs')
+const YAML = require('yaml')
 
 // The subprocess
 const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
 const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
+let listOfFiles = []
 
 // The log paths
-const markdownLintSlimLog = '.markdownlint_slim.log'
-const markdownLintFullLog = '.markdownlint_full.log'
+const markdownLintLog = '.markdownlint.log'
 const markdownLinkCheckLog = '.markdownlinkcheck.log'
 const genIncludesMapLog = '.gen_includes_map.log'
-const markdownlintIgnore = '.markdownlintignore'
 
 // Default paths
 const defaultConfig = path.resolve(cwd, '.markdownlint-cli2.jsonc')
-const markdownLintLogs = /\.markdownlint_.*\.log/
 const defaultSrc = 'src'
+const defaultFoliantConfig = './foliant.yml'
 const defaultIncludesMap = './includes_map.json'
 const usedFoliantConfig = './only_includes_map.yml'
 
 // Options
-const verboseOption = new Option('-v, --verbose', 'Print full linting results').default(false)
+const verboseOption = new Option('-v, --verbose', 'print full linting results').default(false)
 const sourceOption = new Option('-s, --source <path-to-sources>', 'source directory').default(defaultSrc)
-const configOption = new Option('-c, --config', 'use custom markdownlint config').default(false)
+const configOption = new Option('-c, --config <path-to-config>', 'path to custom config').default('')
 const projectOption = new Option('-p, --project <project-name>', 'project name').default('')
 const debugOption = new Option('-d, --debug', 'print executing command').default(false)
-const allowfailureOption = new Option('-f, --allowfailure', 'allow exit with failure if errors').default(false)
-const clearconfigOption = new Option('-l, --clearconfig', 'remove markdownlint config after execution').default(false)
-const includesMapOption = new Option('--includes-map', 'use includes map (foliant is needed)').default(false)
-const foliantConfigOption = new Option('--foliant-config', 'the configuration file is a foliant from which chapters').default('./foliant.yml')
+const allowFailureOption = new Option('-a, --allow-failure', 'allow exit with failure if errors').default(false)
+const clearConfigOption = new Option('-l, --clear-config', 'remove markdownlint config after execution').default(false)
+const fixOption = new Option('-f, --fix', 'fix errors with markdownlint').default(false)
+const markdownlintModeOption = new Option('-m, --markdownlint-mode <mode-name>', 'set mode for markdownlint').choices(['full', 'slim', 'typograph', 'mdlint-default']).default('slim')
+const foliantConfigOption = new Option('--foliant-config <config-path>', 'the configuration file is a foliant from which chapters').default(defaultFoliantConfig)
 
 // The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -56,7 +57,7 @@ function printErrors (logFile) {
   let file
   let fileTmp
   let fileLink
-  if (logFile.match(markdownLintLogs)) {
+  if (logFile.match(markdownLintLog)) {
     regex = /^(?!Finding: |Linting: |Summary: |markdownlint-cli2| ).+/gm
   } else {
     regex = /^\s*\[✖].* Status:/gm
@@ -70,16 +71,15 @@ function printErrors (logFile) {
       }
       if (line.match(regex)) {
         file = line.split(':')[0]
-        if (fileTmp !== file && logFile.match(markdownLintLogs)) {
+        if (fileTmp !== file && logFile.match(markdownLintLog)) {
           fileTmp = file
           console.log(`\n${'-'.repeat(80)}\n\nFILE: ${fileTmp}\n`)
-        } else if (!logFile.match(markdownLintLogs)) {
+        } else if (!logFile.match(markdownLintLog)) {
           console.log(`\n${'-'.repeat(80)}\n\n${fileLink}\n`)
         }
         console.log(line)
       }
     })
-    console.log()
   } catch (err) {
 
   }
@@ -110,9 +110,9 @@ function numberFromLog (logFile, regex, counterror = true) {
 }
 
 const printLintResults = function (verbose = false) {
-  const markdownlintSlim = path.resolve(cwd, markdownLintSlimLog)
+  const markdownlintLogPath = path.resolve(cwd, markdownLintLog)
   const markdownFiles = /Linting: (\d+) file/g
-  const files = fs.readdirSync(__dirname).filter(fn => fn.match(markdownLintLogs))
+  const files = fs.readdirSync(__dirname).filter(fn => fn.match(markdownLintLog))
   const markdownFilesCount = numberFromLog(files[0], markdownFiles, false)
 
   if (markdownFilesCount !== null && markdownFilesCount !== undefined) {
@@ -120,28 +120,19 @@ const printLintResults = function (verbose = false) {
   }
 
   const markdownLintErrors = /Summary: (\d+) error/g
-  let markdownLintErrorsCount = numberFromLog(markdownlintSlim, markdownLintErrors)
+  const markdownLintErrorsCount = numberFromLog(markdownlintLogPath, markdownLintErrors)
 
   if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
-    console.log(`Found ${markdownLintErrorsCount} critical formatting errors`)
+    console.log(`Found ${markdownLintErrorsCount} formatting errors`)
     if (verbose) {
-      printErrors(markdownlintSlim)
+      printErrors(markdownlintLogPath)
     }
-    console.log(`Full markdownlint log see in ${markdownlintSlim}\n`)
-  }
-
-  const markdownlintFull = path.resolve(cwd, markdownLintFullLog)
-  markdownLintErrorsCount = numberFromLog(markdownlintFull, markdownLintErrors)
-
-  if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
-    console.log(`Found ${markdownLintErrorsCount} styleguide and formatting errors`)
-    console.log(`Full markdownlint log see in ${markdownlintFull}\n`)
+    console.log(`Full markdownlint log see in ${markdownlintLogPath}`)
   }
 
   const markdownLinkCheckErrors = /ERROR: (\d+) dead links found!/g
   const markdownlinkcheckLog = path.resolve(cwd, markdownLinkCheckLog)
   const markdownlinkCheckErrorsCount = numberFromLog(markdownlinkcheckLog, markdownLinkCheckErrors)
-
   if (markdownlinkCheckErrorsCount !== null && markdownlinkCheckErrorsCount !== undefined) {
     console.log(`Found ${markdownlinkCheckErrorsCount} broken external links`)
     if (verbose) {
@@ -155,47 +146,155 @@ function writeLog (logFile) {
   return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
-const commandsGen = function (src = defaultSrc, customConfig = false, project = '', includesMap = false, foliantConfig = 'foliant.yml') {
+const commandsGen = function (src = defaultSrc, configPath = '', project = '', markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig, isFix = false, debug = false) {
   const commands = {}
-  const and = (isWin === true) ? '&' : ';'
-  commands.createIncludesMap = ''
+  const fix = (isFix === true) ? '-fix' : ''
 
   let includesMapArg = ''
+  let configPathArg = ''
+  let projectArg = ''
+  let filesArgMdLint = ''
+  let filesArgMdLink = ''
+  let debugArg = ''
+  let includesMap = false
+
+  if (project) {
+    projectArg = `-p "${project}"`
+  }
+
+  if (debug) {
+    console.log('command gen params:\n',
+      'src: ', src,
+      'configPath: ', configPath,
+      'project: ', project,
+      'markdownlintMode: ', markdownlintMode,
+      'foliantConfig: ', foliantConfig,
+      'isFix: ', isFix,
+      'debug: ', debug)
+  }
+
+  // Get list of files and creat includes map
+  if (fs.existsSync(foliantConfig)) {
+    includesMap = prepare(foliantConfig, src)
+  }
+
+  // Create includes map
   if (includesMap) {
-    createConfigIncludesMap(foliantConfig)
-    commands.createIncludesMap = `foliant make --config ${usedFoliantConfig} pre ${writeLog(genIncludesMapLog)} && rm -rf temp_project.pre/ &`
     includesMapArg = `--includes-map ${defaultIncludesMap}`
   }
 
-  let ignoreArgs = ''
-  if (fs.existsSync(markdownlintIgnore)) {
-    const ignores = readFileSync(markdownlintIgnore).toString('utf-8').split(/\r?\n/)
-    ignores.forEach((line) => {
-      if (line) {
-        ignoreArgs = `${ignoreArgs} "#${line}"`
-      }
-    })
+  if (configPath && fs.existsSync(configPath)) {
+    configPathArg = `-c ${configPath}`
   }
 
-  commands.createFullMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m full -s ${src} ${includesMapArg} -p "${project}"` : 'echo "using custom config"'
-  commands.createSlimMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m slim -s ${src} ${includesMapArg} -p "${project}"` : 'echo "using custom config"'
-  commands.createTypographMarkdownlintConfig = (customConfig === false) ? `node ${path.join(__dirname, '/generate.js')} -m typograph -s ${src} -p "${project}"` : 'echo "using custom config"'
-  commands.markdownlintSrcSlim = `${commands.createIncludesMap} ${commands.createSlimMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${ignoreArgs} ${writeLog(markdownLintSlimLog)}`
-  commands.markdownlintSrcFull = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2 "${src}/**/*.md" ${ignoreArgs} ${writeLog(markdownLintFullLog)}`
-  commands.markdownlintSrcFix = `${commands.markdownlintSrcSlim} ${and} ${commands.createFullMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${ignoreArgs} ${writeLog(markdownLintFullLog)}`
-  commands.markdownlintSrcTypograph = `${commands.createTypographMarkdownlintConfig} && ${execPath}/markdownlint-cli2-fix "${src}/**/*.md" ${ignoreArgs} ${writeLog(markdownLintFullLog)}`
-  commands.markdownlinkcheckSrcUnix = `find ${src}/ -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
-  commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${src} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
-  commands.markdownlinkcheckSrc = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
-  commands.lintSrcEssential = `${commands.markdownlintSrcSlim} & ${commands.markdownlinkcheckSrc}`
-  commands.lintSrcFull = `${commands.markdownlintSrcFull} & ${commands.markdownlinkcheckSrc}`
+  if (debug) {
+    debugArg = '-d'
+  }
+
+  if (listOfFiles.length > 0) {
+    listOfFiles.forEach((file) => {
+      if (file) {
+        filesArgMdLint = `${filesArgMdLint} "${file}"`
+      }
+    })
+    filesArgMdLink = filesArgMdLint
+  } else {
+    filesArgMdLint = `"${src}/**/*.md"`
+    filesArgMdLink = `${src}/`
+  }
+
+  // Create config
+  commands.createMarkdownlintConfig = (markdownlintMode !== 'mdlint-default') ? `node ${path.join(__dirname, '/generate.js')} -m ${markdownlintMode} -s ${src} ${projectArg} ${configPathArg} ${debugArg} ${includesMapArg}` : 'echo "using default markdownlint config"'
+
+  // Markdownlint
+  commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} ${filesArgMdLint} ${writeLog(markdownLintLog)}`
+
+  // Markdownlintcheck
+  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLink} -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  commands.markdownlinkcheckSrcWin = `${filesArgMdLink} "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
+
+  commands.markdownlinkcheck = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
+
+  // Merge comands markdownlint and markdownlinkcheck
+  commands.lintSrcFull = `${commands.markdownlint} & ${commands.markdownlinkcheck}`
+
   return {
     commands
   }
 }
 
-function clearConfig (clearconfig) {
-  if (clearconfig === true) {
+function prepare (foliantConfig, sourceDir) {
+  // Def custom tags
+  const env = {
+    tag: '!env',
+    resolve: str => str
+  }
+  const include = {
+    tag: '!include',
+    resolve: str => ''
+  }
+  const path = {
+    tag: '!path',
+    resolve: str => str
+  }
+  const from = {
+    tag: '!from',
+    resolve: str => ''
+  }
+
+  // Get foliant config
+  const configPath = fs.readFileSync(foliantConfig, 'utf8')
+  const config = YAML.parse(configPath, { customTags: [env, include, path, from] })
+  eachRecursive(config.chapters, listOfFiles, sourceDir)
+
+  // Exist includes in list of preprocessors
+  const existInclude = config.preprocessors.includes('includes')
+
+  // Create includes map
+  if (existInclude) {
+    createConfigIncludesMap(foliantConfig)
+    const genIncludesMapCommand = `foliant make --config ${usedFoliantConfig} pre --logs .temp_project_logs ${writeLog(genIncludesMapLog)} && rm -rf temp_project.pre/ && rm -rf .temp_project_logs/`
+    execSync(genIncludesMapCommand, { shell: shell }, (err) => {
+      if (err) {
+        console.error(err)
+      }
+    })
+
+    // Get files from includes map
+    const includesMapContent = JSON.parse(fs.readFileSync(defaultIncludesMap, 'utf8'))
+    eachRecursive(includesMapContent, listOfFiles, sourceDir)
+  }
+  //
+  listOfFiles = [...new Set(listOfFiles)]
+
+  return existInclude
+}
+
+function eachRecursive (obj, list, sourceDir) {
+  for (const k in obj) {
+    if (typeof obj[k] === 'string') {
+      const s = obj[k]
+      if (s.endsWith('.md')) {
+        if (s.startsWith(sourceDir)) {
+          if (fs.existsSync(s)) {
+            list.push(s)
+          }
+        } else {
+          if (!s.startsWith('http')) {
+            if (fs.existsSync(`${sourceDir}/${s}`)) {
+              list.push(`${sourceDir}/${s}`)
+            }
+          }
+        }
+      }
+    } else {
+      eachRecursive(obj[k], list, sourceDir)
+    }
+  }
+}
+
+function clearConfigFile (clearConfig) {
+  if (clearConfig === true) {
     console.log(`removing ${defaultConfig} ...`)
     unlink(defaultConfig, (err) => {
       if (err && err.syscall === 'unlink') {
@@ -211,14 +310,16 @@ function checkExitCode (allowfailure) {
   }
 }
 
-function afterLint (verbose, clearconfig, allowfailure) {
+function afterLint (verbose = false, clearConfig = false, allowFailure = false, debug = false) {
   printLintResults(verbose)
-  clearConfig(clearconfig)
-  clearIncludesMap()
-  checkExitCode(allowfailure)
+  clearConfigFile(clearConfig)
+  if (!debug) {
+    rmIncludesMap()
+  }
+  checkExitCode(allowFailure)
 }
 
-function execute (command, verbose = false, debug = false, allowfailure = false, clearconfig = false) {
+function execute (command, verbose = false, debug = false, allowFailure = false, clearConfig = false) {
   if (debug) {
     console.log('executed command: ')
     console.log(command)
@@ -226,7 +327,7 @@ function execute (command, verbose = false, debug = false, allowfailure = false,
   if (verbose === false) {
     exec(command, { shell: shell }, (err, stdout, stderror) => {
       if (err || stderror || stdout) {
-        afterLint(verbose, clearconfig, allowfailure)
+        afterLint(verbose, clearConfig, allowFailure, debug)
       } else {
         console.log('Command completed with no errors!')
       }
@@ -245,7 +346,7 @@ function execute (command, verbose = false, debug = false, allowfailure = false,
     spawnCommand.on('close', (code) => {
       console.log(`child process exited with code ${code}`)
       console.log(`\n${'='.repeat(80)}\n\nRESULTS:\n\n${'='.repeat(80)}\n`)
-      afterLint(verbose, clearconfig, allowfailure)
+      afterLint(verbose, clearConfig, allowFailure, debug)
     })
   }
 }
@@ -268,17 +369,24 @@ backend_config:
     slug: temp_project
 `
   /* eslint-enable no-useless-escape */
-
-  fs.writeFile(usedFoliantConfig, onlyIncludesMapConf, (data) => { console.log(data) })
-  console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated`)
+  fs.writeFileSync(usedFoliantConfig, onlyIncludesMapConf, (err) => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated`)
+  })
 }
 
-function clearIncludesMap () {
+function rmIncludesMap () {
   if (fs.existsSync(usedFoliantConfig)) {
-    fs.rm(usedFoliantConfig, (data) => { console.log(data) })
+    fs.rmSync(usedFoliantConfig, { force: true })
   }
   if (fs.existsSync(defaultIncludesMap)) {
-    fs.rm(defaultIncludesMap, (data) => { console.log(data) })
+    fs.rmSync(defaultIncludesMap, { force: true })
+  }
+  if (fs.existsSync(genIncludesMapLog)) {
+    fs.rmSync(genIncludesMapLog, { force: true })
   }
 }
 
@@ -289,136 +397,64 @@ program
   .version('0.1.10')
 
 program.command('full-check')
-  .description('Check md files with markdownlint and markdown-link-check')
+  .description('check md files with markdownlint and markdown-link-check')
   .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(configOption)
   .addOption(projectOption)
   .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .addOption(includesMapOption)
+  .addOption(allowFailureOption)
+  .addOption(clearConfigOption)
+  .addOption(fixOption)
+  .addOption(markdownlintModeOption)
   .addOption(foliantConfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.lintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.markdownlintmode, options.foliantConfig, options.fix, options.debug).commands.lintSrcFull, options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
-program.command('essential')
-  .description('Check md files for critical formatting errors with markdownlint and validate external links ith markdown-link-check')
+program.command('markdown')
+  .description('check md files for errors with markdownlint')
   .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(configOption)
   .addOption(projectOption)
   .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .addOption(includesMapOption)
+  .addOption(allowFailureOption)
+  .addOption(clearConfigOption)
+  .addOption(fixOption)
+  .addOption(markdownlintModeOption)
   .addOption(foliantConfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.lintSrcEssential, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.project, options.markdownlintMode, options.foliantConfig, options.fix, options.debug).commands.markdownlint, options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
 program.command('urls')
-  .description('Validate external links with markdown-link-check')
+  .description('validate external links with markdown-link-check')
   .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
+  .addOption(allowFailureOption)
+  .addOption(clearConfigOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config).commands.markdownlinkcheckSrc, options.verbose, options.debug, options.allowfailure, options.clearconfig)
-  })
-
-program.command('styleguide')
-  .description('Check for styleguide adherence with markdownlint')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .addOption(includesMapOption)
-  .addOption(foliantConfigOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.markdownlintSrcFull, options.verbose, options.debug, options.allowfailure, options.clearconfig)
-  })
-
-program.command('slim')
-  .description('Check for critical errors with markdownlint')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .addOption(includesMapOption)
-  .addOption(foliantConfigOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.markdownlintSrcSlim, options.verbose, options.debug, options.allowfailure, options.clearconfig)
-  })
-
-program.command('fix')
-  .description('Fix formatting errors with markdownlint')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .addOption(includesMapOption)
-  .addOption(foliantConfigOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.markdownlintSrcFix, options.verbose, options.debug, options.allowfailure, options.clearconfig)
-  })
-
-program.command('typograph')
-  .description('Fix typographic errors with markdownlint')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowfailureOption)
-  .addOption(clearconfigOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project).commands.markdownlintSrcTypograph, options.verbose, options.debug, options.allowfailure, options.clearconfig)
+    execute(commandsGen(options.source, options.config, options.debug).commands.markdownlinkcheck, options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
 program.command('print')
-  .description('Print linting results')
+  .description('print linting results')
   .addOption(verboseOption)
   .action((options) => {
     printLintResults(options.verbose)
   })
 
-program.command('create-full-config')
-  .description('Create full markdownlint config')
+program.command('create-config')
+  .description('create markdownlint config')
+  .addOption(verboseOption)
   .addOption(sourceOption)
   .addOption(projectOption)
+  .addOption(markdownlintModeOption)
   .addOption(debugOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.createFullMarkdownlintConfig, options.verbose, options.debug)
-  })
-
-program.command('create-slim-config')
-  .description('Create slim markdownlint config')
-  .addOption(sourceOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.createSlimMarkdownlintConfig, options.verbose, options.debug)
-  })
-
-program.command('create-typograph-config')
-  .description('Create typograph markdownlint config')
-  .addOption(sourceOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.includesMap, options.foliantConfig).commands.createTypographMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project, options.markdownlintMode, options.foliantConfig, options.debug).commands.createMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.parse()

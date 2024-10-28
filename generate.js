@@ -6,7 +6,7 @@ const fs = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
 
-function createConfig (mode = 'full', source = '', project = '', includesMap = '') {
+function createConfig (mode = 'full', source = '', project = '', configPath = '', debug = false, includesMap = '') {
   let customRules
   if (fs.existsSync(path.join(__dirname, '/node_modules/markdownlint-rules-foliant/package.json'))) {
     customRules = [
@@ -186,6 +186,7 @@ function createConfig (mode = 'full', source = '', project = '', includesMap = '
   }
 
   let config
+
   if (mode === 'slim') {
     config = configSlim
   } else if (mode === 'default') {
@@ -195,25 +196,45 @@ function createConfig (mode = 'full', source = '', project = '', includesMap = '
   } else {
     config = configFull
   }
-  const obj = {
-    customRules,
-    config
+  if (configPath !== '') {
+    mode = 'custom'
+    console.log(`using configuration from a file: ${configPath}`)
+    try {
+      const customConfig = JSON.parse(fs.readFileSync(path.resolve(cwd, configPath), 'utf-8'))
+      config = Object.assign({}, config, customConfig)
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        console.error('Invalid JSON format')
+      } else {
+        console.error(err)
+      }
+      mode = 'slim'
+      config = configSlim
+    }
   }
-  const json = JSON.stringify(obj, null, 4)
+
+  if (debug) {
+    console.log(config)
+  }
+
+  const json = JSON.stringify({ customRules, config }, null, 4)
   fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), json, 'utf8')
-  console.log(`${mode} markdownlint config created succesfully!`)
+  console.log(`${mode} markdownlint config created successfully!`)
 }
 
 program
   .name('create-markdownlint-config')
   .description('script for generating .markdownlint-cli2.jsonc in foliant-project root')
   .version('0.0.1')
-  .option('-m, --mode <mode>', 'full, slim, typograph or default config', 'full')
+  .option('-m, --mode <mode>', 'full, slim, typograph or default config', 'slim')
   .option('-s, --source <source>', 'relative path to source directory', '')
   .option('-p, --project <project>', 'project name', '')
+  .option('-c, --config-path <path-to-config>', 'path to custom config', '')
+  .option('-d, --debug', 'output of debugging information', false)
   .option('--includes-map <includes-map>', 'includes map path', '')
 
 program.parse()
 
 const options = program.opts()
-createConfig(options.mode, options.source, options.project, options.includesMap)
+
+createConfig(options.mode, options.source, options.project, options.configPath, options.debug, options.includesMap)
