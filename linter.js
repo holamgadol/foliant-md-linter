@@ -153,9 +153,9 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
   let includesMapArg = ''
   let configPathArg = ''
   let projectArg = ''
-  let filesArgMdLint = ''
-  let filesArgMdLink = ''
   let debugArg = ''
+  let filesArgMdLint = `"${src}/**/*.md"`
+  let filesArgMdLink = `${src}/`
   let includesMap = false
 
   if (project) {
@@ -191,16 +191,14 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
     debugArg = '-d'
   }
 
-  if (listOfFiles.length > 0) {
+  if (listOfFiles.length > 0 && !isWin) {
+    filesArgMdLint = ''
     listOfFiles.forEach((file) => {
       if (file) {
         filesArgMdLint = `${filesArgMdLint} "${file}"`
       }
     })
     filesArgMdLink = filesArgMdLint
-  } else {
-    filesArgMdLint = `"${src}/**/*.md"`
-    filesArgMdLink = `${src}/`
   }
 
   // Create config
@@ -210,8 +208,8 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
   commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} ${filesArgMdLint} ${writeLog(markdownLintLog)}`
 
   // Markdownlintcheck
-  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLink} -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
-  commands.markdownlinkcheckSrcWin = `${filesArgMdLink} "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
+  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLink} -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -q -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  commands.markdownlinkcheckSrcWin = `${filesArgMdLink} "cmd /c npx markdown-link-check @file -q -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
 
   commands.markdownlinkcheck = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
 
