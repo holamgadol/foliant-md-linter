@@ -3,10 +3,6 @@ const {
   exec,
   execSync
 } = require('child_process')
-const fs = require('fs')
-// const { v4 } = require('uuid')
-// const { cwd, chdir } = require('process')
-// const originalCwd = cwd()
 
 const isWin = process.platform === 'win32'
 
@@ -35,9 +31,8 @@ const testSrcDirs = ['src', 'alt-src', 'no-errors-src']
 
 testSrcDirs.forEach(srcDir => copyTestSrcDir(srcDir))
 
-const cli = (args, cwd, clearLogs = true, tempDir = '') => {
+const cli = (args, cwd, clearLogs = true) => {
   let clearLogsCmd = ''
-  const originalCwd = '.'
 
   if (clearLogs) {
     clearLogsCmd = (isWin === true) ? 'DEL /Q /F ".markdownlin*" &&' : 'rm -f .markdownlin* &&'
@@ -54,33 +49,8 @@ const cli = (args, cwd, clearLogs = true, tempDir = '') => {
           stderr
         })
       })
-    if (tempDir.length > 0) {
-      // change directory
-      cwd = originalCwd
-      // remove <tempDir>
-      fs.rmSync(tempDir)
-    }
   })
 }
-
-// const mkTempDir = () => {
-//   const tempDir = v4()
-//   chdir(originalCwd)
-//   console.log(tempDir)
-//   // make directory <tempDir>
-//   fs.mkdirSync(`temp/${tempDir}`, { recursive: true })
-//   // copy test to <tempDir>
-//   fs.cpSync('test', `temp/${tempDir}/test/`, { recursive: true })
-//   // change directory <tempDir>
-//   chdir(`temp/${tempDir}/test/`)
-// }
-
-// const rmTempDir = () => {
-//   // change directory original
-//   chdir(originalCwd)
-//   // remove temp directory
-//   fs.rmdirSync('temp', { force: true, recursive: true })
-// }
 
 // Export functions
 module.exports = {
@@ -88,6 +58,4 @@ module.exports = {
   linkCheckFilePrint,
   linuxSwapString,
   copyTestSrcDir
-  // mkTempDir,
-  // rmTempDir
 }

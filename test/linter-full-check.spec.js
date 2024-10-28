@@ -5,8 +5,6 @@ const {
   linkCheckFilePrint,
   linuxSwapString,
   copyTestSrcDir
-  // mkTempDir
-  // rmTempDir
 } = require('./utils.js')
 
 const cwd = process.cwd().toString()
@@ -17,14 +15,6 @@ jest.setTimeout(30000)
 const testSrcDirs = ['src', 'alt-src', 'no-errors-src']
 
 testSrcDirs.forEach(srcDir => copyTestSrcDir(srcDir))
-
-// beforeEach(() => {
-//   mkTempDir()
-// })
-
-// afterAll(() => {
-//   rmTempDir()
-// })
 
 test('full-check -m slim', async () => {
   const expectedStdout = [
