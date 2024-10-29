@@ -77,7 +77,7 @@ function printErrors (logFile) {
         } else if (!logFile.match(markdownLintLog)) {
           console.log(`\n${'-'.repeat(80)}\n\n${fileLink}\n`)
         }
-        console.log(line)
+        console.log(`    ${line}`)
       }
     })
   } catch (err) {
@@ -115,30 +115,38 @@ const printLintResults = function (verbose = false) {
   const files = fs.readdirSync(__dirname).filter(fn => fn.match(markdownLintLog))
   const markdownFilesCount = numberFromLog(files[0], markdownFiles, false)
 
+  // Log numbers of files
   if (markdownFilesCount !== null && markdownFilesCount !== undefined) {
-    console.log(`Checked ${markdownFilesCount} files`)
+    console.log(`Checked ${markdownFilesCount} files\n`)
   }
 
+  // Markdown Lint
   const markdownLintErrors = /Summary: (\d+) error/g
   const markdownLintErrorsCount = numberFromLog(markdownlintLogPath, markdownLintErrors)
 
-  if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
-    console.log(`Found ${markdownLintErrorsCount} formatting errors`)
-    if (verbose) {
-      printErrors(markdownlintLogPath)
-    }
-    console.log(`Full markdownlint log see in ${markdownlintLogPath}`)
-  }
-
+  // Markdown Link Check
   const markdownLinkCheckErrors = /ERROR: (\d+) dead links found!/g
   const markdownlinkcheckLog = path.resolve(cwd, markdownLinkCheckLog)
   const markdownlinkCheckErrorsCount = numberFromLog(markdownlinkcheckLog, markdownLinkCheckErrors)
+
+  // Log
+  if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
+    console.log(`\nFound ${markdownLintErrorsCount} formatting errors`)
+    if (verbose) {
+      printErrors(markdownlintLogPath)
+    }
+    console.log(`Full markdownlint log see in ${markdownlintLogPath}\n`)
+    if (markdownlinkCheckErrorsCount !== null && markdownlinkCheckErrorsCount !== undefined) {
+      console.log(`\n${'='.repeat(80)}\n`)
+    }
+  }
+
   if (markdownlinkCheckErrorsCount !== null && markdownlinkCheckErrorsCount !== undefined) {
-    console.log(`Found ${markdownlinkCheckErrorsCount} broken external links`)
+    console.log(`\nFound ${markdownlinkCheckErrorsCount} broken external links`)
     if (verbose) {
       printErrors(markdownlinkcheckLog)
     }
-    console.log(`Full markdown-link-check log see in ${markdownlinkcheckLog}`)
+    console.log(`Full markdown-link-check log see in ${markdownlinkcheckLog}\n`)
   }
 }
 
@@ -155,7 +163,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
   let projectArg = ''
   let debugArg = ''
   let filesArgMdLint = `"${src}/**/*.md"`
-  let filesArgMdLink = `${src}/`
+  let filesArgMdLinkCheck = `${src}/`
   let includesMap = false
 
   if (project) {
@@ -198,7 +206,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
         filesArgMdLint = `${filesArgMdLint} "${file}"`
       }
     })
-    filesArgMdLink = filesArgMdLint
+    filesArgMdLinkCheck = filesArgMdLint
   }
 
   // Create config
@@ -208,8 +216,8 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
   commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} ${filesArgMdLint} ${writeLog(markdownLintLog)}`
 
   // Markdownlintcheck
-  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLink} -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -q -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
-  commands.markdownlinkcheckSrcWin = `${filesArgMdLink} "cmd /c npx markdown-link-check @file -q -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
+  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLinkCheck} -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${filesArgMdLinkCheck} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
 
   commands.markdownlinkcheck = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
 
@@ -262,7 +270,7 @@ function prepare (foliantConfig, sourceDir) {
     const includesMapContent = JSON.parse(fs.readFileSync(defaultIncludesMap, 'utf8'))
     eachRecursive(includesMapContent, listOfFiles, sourceDir)
   }
-  //
+  // Remove duplicates
   listOfFiles = [...new Set(listOfFiles)]
 
   return existInclude
@@ -343,7 +351,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
 
     spawnCommand.on('close', (code) => {
       console.log(`child process exited with code ${code}`)
-      console.log(`\n${'='.repeat(80)}\n\nRESULTS:\n\n${'='.repeat(80)}\n`)
+      console.log(`\n${'='.repeat(80)}\n\n${' '.repeat(37)}RESULTS\n\n${'='.repeat(80)}\n`)
       afterLint(verbose, clearConfig, allowFailure, debug)
     })
   }
