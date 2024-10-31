@@ -41,9 +41,9 @@ const allowFailureOption = new Option('-a, --allow-failure', 'allow exit with fa
 const clearConfigOption = new Option('-l, --clear-config', 'remove markdownlint config after execution').default(false)
 const fixOption = new Option('-f, --fix', 'fix errors with markdownlint').default(false)
 const markdownlintModeOption = new Option('-m, --markdownlint-mode <mode-name>', 'set mode for markdownlint').choices(['full', 'slim', 'typograph', 'mdlint-default']).default('slim')
-const foliantConfigOption = new Option('--foliant-config <config-path>', 'the configuration file is a foliant from which chapters').default(defaultFoliantConfig)
+const foliantConfigOption = new Option('--foliant-config <config-path>', 'the configuration file is a foliant from which chapters').default('foliant.yml')
 const nodeModulesOption = new Option('--node-modules <node-modules-path>', 'custom path to node modules').default('')
-const workingDirOption = new Option('-w --working-dir <working-dir>', 'working dir (need for intaractive work)').default('')
+const workingDirOption = new Option('-w --working-dir <working-dir>', 'working directory (required when using the extension for vs code)').default('')
 
 // The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -181,6 +181,8 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
       'project: ', project,
       'markdownlintMode: ', markdownlintMode,
       'foliantConfig: ', foliantConfig,
+      'nodeModules:', nodeModules,
+      'workinDir:', workinDir,
       'isFix: ', isFix,
       'debug: ', debug)
   }
