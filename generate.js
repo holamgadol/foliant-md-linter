@@ -6,27 +6,25 @@ const fs = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
 
-function createConfig (mode = 'full', source = '', project = '', configPath = '', debug = false, includesMap = '') {
-  let customRules
-  if (fs.existsSync(path.join(__dirname, '/node_modules/markdownlint-rules-foliant/package.json'))) {
-    customRules = [
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/indented-fence'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
-      path.join(__dirname, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
-    ]
-  } else {
-    customRules = [
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/indented-fence'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/non-literal-fence-label'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/fenced-code-in-quote'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/typograph'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/validate-internal-links'),
-      path.resolve(__dirname, '../markdownlint-rules-foliant/lib/frontmatter-tags-exist')
-    ]
+function createConfig (mode = 'full', source = '', project = '', configPath = '', includesMap = '', nodeModulePath = '', workingDir = '', debug = false) {
+  // Set validate-internal-links config
+  const validateIntLinksConf = {}
+  validateIntLinksConf.src = source || undefined
+  validateIntLinksConf.project = project || undefined
+  validateIntLinksConf.includesMap = includesMap || undefined
+  validateIntLinksConf.workingDir = workingDir || undefined
+
+  if (nodeModulePath.length === 0) {
+    nodeModulePath = __dirname
   }
+  const customRules = [
+    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/indented-fence'),
+    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
+    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
+    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
+    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
+    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
+  ]
 
   const configFull = {
     MD001: true,
@@ -72,11 +70,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     'non-literal-fence-label': true,
     'fenced-code-in-quote': true,
     typograph: true,
-    'validate-internal-links': {
-      src: source.length === 0 ? undefined : source,
-      project: project.length === 0 ? undefined : project,
-      includesMap: project.length === 0 ? undefined : includesMap
-    },
+    'validate-internal-links': validateIntLinksConf,
     'frontmatter-tags-exist': false
   }
 
@@ -122,11 +116,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     'non-literal-fence-label': true,
     'fenced-code-in-quote': true,
     typograph: false,
-    'validate-internal-links': {
-      src: source.length === 0 ? undefined : source,
-      project: project.length === 0 ? undefined : project,
-      includesMap: project.length === 0 ? undefined : includesMap
-    },
+    'validate-internal-links': validateIntLinksConf,
     'frontmatter-tags-exist': false
   }
 
@@ -230,11 +220,12 @@ program
   .option('-s, --source <source>', 'relative path to source directory', '')
   .option('-p, --project <project>', 'project name', '')
   .option('-c, --config-path <path-to-config>', 'path to custom config', '')
-  .option('-d, --debug', 'output of debugging information', false)
   .option('--includes-map <includes-map>', 'includes map path', '')
+  .option('--node-modules <node-modules-path>', 'custom path to node modules', '')
+  .option('-w, --working-dir <working-dir>', 'working dir', '')
+  .option('-d, --debug', 'output of debugging information', false)
 
 program.parse()
 
 const options = program.opts()
-
-createConfig(options.mode, options.source, options.project, options.configPath, options.debug, options.includesMap)
+createConfig(options.mode, options.source, options.project, options.configPath, options.includesMap, options.nodeModules, options.workingDir, options.debug)

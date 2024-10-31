@@ -92,6 +92,8 @@ Run _foliant-md-linter_ from the project root with following commands and option
     - `-p`, `--project <project-name>` – specify project name
     - `-d`, `--debug` – print executing command (default: false)
     - `-a`, `--allowfailure` – allow exit with failure if errors (default: false)
+    - `--node-modules <node-modules-path>` – custom path to node modules (the command to get the path to the node modules `npm list -g | head -1`)
+    - `-w --working-dir <working-dir>` – the working directory should be set if the project folder differs from the CWD. For example, when using the linter in vs code (the command to get the path to the working dir `pwd` in the foliant project folder)
 
       _helpful in CI/CD, as you can cause pipelines to fail in case of linting errors_
 

@@ -27,9 +27,9 @@ const genIncludesMapLog = '.gen_includes_map.log'
 // Default paths
 const defaultConfig = path.resolve(cwd, '.markdownlint-cli2.jsonc')
 const defaultSrc = 'src'
-const defaultFoliantConfig = './foliant.yml'
-const defaultIncludesMap = './includes_map.json'
-const usedFoliantConfig = './only_includes_map.yml'
+const defaultFoliantConfig = path.resolve(cwd, 'foliant.yml')
+const defaultIncludesMap = 'includes_map.json'
+const usedFoliantConfig = path.resolve(cwd, 'only_includes_map.yml')
 
 // Options
 const verboseOption = new Option('-v, --verbose', 'print full linting results').default(false)
@@ -42,6 +42,8 @@ const clearConfigOption = new Option('-l, --clear-config', 'remove markdownlint 
 const fixOption = new Option('-f, --fix', 'fix errors with markdownlint').default(false)
 const markdownlintModeOption = new Option('-m, --markdownlint-mode <mode-name>', 'set mode for markdownlint').choices(['full', 'slim', 'typograph', 'mdlint-default']).default('slim')
 const foliantConfigOption = new Option('--foliant-config <config-path>', 'the configuration file is a foliant from which chapters').default(defaultFoliantConfig)
+const nodeModulesOption = new Option('--node-modules <node-modules-path>', 'custom path to node modules').default('')
+const workingDirOption = new Option('-w --working-dir <working-dir>', 'working dir (need for intaractive work)').default('')
 
 // The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -154,7 +156,7 @@ function writeLog (logFile) {
   return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
-const commandsGen = function (src = defaultSrc, configPath = '', project = '', markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig, isFix = false, debug = false) {
+const commandsGen = function (src = defaultSrc, configPath = '', project = '', markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig, nodeModules = '', workinDir = '', isFix = false, debug = false) {
   const commands = {}
   const fix = (isFix === true) ? '-fix' : ''
 
@@ -162,12 +164,14 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
   let configPathArg = ''
   let projectArg = ''
   let debugArg = ''
+  let nodeModulesArg = ''
+  let workinDirArg = ''
   let filesArgMdLint = `"${src}/**/*.md"`
   let filesArgMdLinkCheck = `${src}/`
   let includesMap = false
 
   if (project) {
-    projectArg = `-p "${project}"`
+    projectArg = ` -p "${project}"`
   }
 
   if (debug) {
@@ -181,6 +185,14 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
       'debug: ', debug)
   }
 
+  // Working directory and node_modules
+  if (workinDir) {
+    workinDirArg = ` --working-dir ${workinDir}`
+  }
+  if (nodeModules) {
+    nodeModulesArg = ` --node-modules ${nodeModules}`
+  }
+
   // Get list of files and creat includes map
   if (fs.existsSync(foliantConfig)) {
     includesMap = prepare(foliantConfig, src)
@@ -188,15 +200,15 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
 
   // Create includes map
   if (includesMap) {
-    includesMapArg = `--includes-map ${defaultIncludesMap}`
+    includesMapArg = ` --includes-map ${defaultIncludesMap}`
   }
 
   if (configPath && fs.existsSync(configPath)) {
-    configPathArg = `-c ${configPath}`
+    configPathArg = ` -c ${configPath}`
   }
 
   if (debug) {
-    debugArg = '-d'
+    debugArg = ' -d'
   }
 
   if (listOfFiles.length > 0 && !isWin) {
@@ -210,8 +222,8 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
   }
 
   // Create config
-  commands.createMarkdownlintConfig = (markdownlintMode !== 'mdlint-default') ? `node ${path.join(__dirname, '/generate.js')} -m ${markdownlintMode} -s ${src} ${projectArg} ${configPathArg} ${debugArg} ${includesMapArg}` : 'echo "using default markdownlint config"'
-
+  commands.createMarkdownlintConfig = (markdownlintMode !== 'mdlint-default') ? `node ${path.join(__dirname, '/generate.js')} -m ${markdownlintMode} -s ${src}${projectArg}${configPathArg}${debugArg}${includesMapArg}${nodeModulesArg}${workinDirArg}` : 'echo "using default markdownlint config"'
+  console.log(commands.createMarkdownlintConfig)
   // Markdownlint
   commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} ${filesArgMdLint} ${writeLog(markdownLintLog)}`
 
@@ -320,7 +332,7 @@ function afterLint (verbose = false, clearConfig = false, allowFailure = false, 
   printLintResults(verbose)
   clearConfigFile(clearConfig)
   if (!debug) {
-    rmIncludesMap()
+    rmIncludesMap(clearConfig)
   }
   checkExitCode(allowFailure)
 }
@@ -384,11 +396,11 @@ backend_config:
   })
 }
 
-function rmIncludesMap () {
+function rmIncludesMap (clearConfig = false) {
   if (fs.existsSync(usedFoliantConfig)) {
     fs.rmSync(usedFoliantConfig, { force: true })
   }
-  if (fs.existsSync(defaultIncludesMap)) {
+  if (clearConfig && fs.existsSync(defaultIncludesMap)) {
     fs.rmSync(defaultIncludesMap, { force: true })
   }
   if (fs.existsSync(genIncludesMapLog)) {
@@ -414,8 +426,10 @@ program.command('full-check')
   .addOption(fixOption)
   .addOption(markdownlintModeOption)
   .addOption(foliantConfigOption)
+  .addOption(nodeModulesOption)
+  .addOption(workingDirOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.markdownlintmode, options.foliantConfig, options.fix, options.debug).commands.lintSrcFull, options.verbose, options.debug, options.allowFailure, options.clearConfig)
+    execute(commandsGen(options.source, options.config, options.project, options.markdownlintmode, options.foliantConfig, options.nodeModules, options.workingDir, options.fix, options.debug).commands.lintSrcFull, options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
 program.command('markdown')
@@ -430,8 +444,10 @@ program.command('markdown')
   .addOption(fixOption)
   .addOption(markdownlintModeOption)
   .addOption(foliantConfigOption)
+  .addOption(nodeModulesOption)
+  .addOption(workingDirOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.markdownlintMode, options.foliantConfig, options.fix, options.debug).commands.markdownlint, options.verbose, options.debug, options.allowFailure, options.clearConfig)
+    execute(commandsGen(options.source, options.config, options.project, options.markdownlintMode, options.foliantConfig, options.nodeModules, options.workingDir, options.fix, options.debug).commands.markdownlint, options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
 program.command('urls')
@@ -441,8 +457,9 @@ program.command('urls')
   .addOption(debugOption)
   .addOption(allowFailureOption)
   .addOption(clearConfigOption)
+  .addOption(workingDirOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.debug).commands.markdownlinkcheck, options.verbose, options.debug, options.allowFailure, options.clearConfig)
+    execute(commandsGen(options.source, options.config, options.nodeModules, options.workingDir, options.debug).commands.markdownlinkcheck, options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
 program.command('print')
@@ -459,8 +476,11 @@ program.command('create-config')
   .addOption(projectOption)
   .addOption(markdownlintModeOption)
   .addOption(debugOption)
+  .addOption(foliantConfigOption)
+  .addOption(nodeModulesOption)
+  .addOption(workingDirOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.markdownlintMode, options.foliantConfig, options.debug).commands.createMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project, options.markdownlintMode, options.foliantConfig, options.nodeModules, options.workingDir, options.debug).commands.createMarkdownlintConfig, options.verbose, options.debug)
   })
 
 program.parse()
