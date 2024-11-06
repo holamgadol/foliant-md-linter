@@ -30,6 +30,7 @@ const defaultSrc = 'src'
 const defaultFoliantConfig = path.resolve(cwd, 'foliant.yml')
 const defaultIncludesMap = 'includes_map.json'
 const usedFoliantConfig = path.resolve(cwd, 'only_includes_map.yml')
+const vscodeSettings = '.vscode/settings.json'
 
 // Options
 const verboseOption = new Option('-v, --verbose', 'print full linting results').default(false)
@@ -44,6 +45,7 @@ const markdownlintModeOption = new Option('-m, --markdownlint-mode <mode-name>',
 const foliantConfigOption = new Option('--foliant-config <config-path>', 'the configuration file is a foliant from which chapters').default('foliant.yml')
 const nodeModulesOption = new Option('--node-modules <node-modules-path>', 'custom path to node modules').default('')
 const workingDirOption = new Option('-w --working-dir <working-dir>', 'working directory (required when using the extension for vs code)').default('')
+const vsCodeOption = new Option('--vs-code', 'enable change vs-code settings').default(false)
 
 // The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -156,7 +158,9 @@ function writeLog (logFile) {
   return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
-const commandsGen = function (src = defaultSrc, configPath = '', project = '', markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig, nodeModules = '', workinDir = '', isFix = false, debug = false) {
+const commandsGen = function (src = defaultSrc, configPath = '', project = '',
+  markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig,
+  nodeModules = '', workinDir = '', isFix = false, debug = false, vscode = false) {
   const commands = {}
   const fix = (isFix === true) ? '-fix' : ''
 
@@ -211,6 +215,10 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '', m
 
   if (debug) {
     debugArg = ' -d'
+  }
+
+  if (vscode) {
+    initVSCodeSettings(listOfFiles)
   }
 
   if (listOfFiles.length > 0 && !isWin) {
@@ -339,6 +347,19 @@ function afterLint (verbose = false, clearConfig = false, allowFailure = false, 
   checkExitCode(allowFailure)
 }
 
+function initVSCodeSettings (listOfFiles = []) {
+  let data = {
+    'markdownlint.lintWorkspaceGlobs': listOfFiles
+  }
+  if (fs.existsSync(vscodeSettings)) {
+    const originalData = fs.readFileSync(vscodeSettings)
+    data = Object.assign({}, originalData, data)
+  } else {
+    fs.mkdirSync(path.dirname(vscodeSettings), { recursive: true })
+  }
+  fs.writeFileSync(vscodeSettings, JSON.stringify(data))
+}
+
 function execute (command, verbose = false, debug = false, allowFailure = false, clearConfig = false) {
   if (debug) {
     console.log('executed command: ')
@@ -431,7 +452,10 @@ program.command('full-check')
   .addOption(nodeModulesOption)
   .addOption(workingDirOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.markdownlintmode, options.foliantConfig, options.nodeModules, options.workingDir, options.fix, options.debug).commands.lintSrcFull, options.verbose, options.debug, options.allowFailure, options.clearConfig)
+    execute(commandsGen(options.source, options.config, options.project,
+      options.markdownlintmode, options.foliantConfig, options.nodeModules,
+      options.workingDir, options.fix, options.debug).commands.lintSrcFull,
+    options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
 program.command('markdown')
@@ -449,7 +473,10 @@ program.command('markdown')
   .addOption(nodeModulesOption)
   .addOption(workingDirOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.markdownlintMode, options.foliantConfig, options.nodeModules, options.workingDir, options.fix, options.debug).commands.markdownlint, options.verbose, options.debug, options.allowFailure, options.clearConfig)
+    execute(commandsGen(options.source, options.config, options.project,
+      options.markdownlintMode, options.foliantConfig, options.nodeModules,
+      options.workingDir, options.fix, options.debug).commands.markdownlint,
+    options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
 program.command('urls')
@@ -461,7 +488,9 @@ program.command('urls')
   .addOption(clearConfigOption)
   .addOption(workingDirOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.nodeModules, options.workingDir, options.debug).commands.markdownlinkcheck, options.verbose, options.debug, options.allowFailure, options.clearConfig)
+    execute(commandsGen(options.source, options.config, options.nodeModules,
+      options.workingDir, options.debug).commands.markdownlinkcheck,
+    options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
 program.command('print')
@@ -481,8 +510,12 @@ program.command('create-config')
   .addOption(foliantConfigOption)
   .addOption(nodeModulesOption)
   .addOption(workingDirOption)
+  .addOption(vsCodeOption)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project, options.markdownlintMode, options.foliantConfig, options.nodeModules, options.workingDir, options.debug).commands.createMarkdownlintConfig, options.verbose, options.debug)
+    execute(commandsGen(options.source, options.config, options.project,
+      options.markdownlintMode, options.foliantConfig, options.nodeModules,
+      options.workingDir, options.fix, options.debug, options.vsCode).commands.createMarkdownlintConfig,
+    options.verbose, options.debug)
   })
 
 program.parse()
