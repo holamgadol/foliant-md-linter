@@ -5,7 +5,7 @@ const {
   linkCheckFilePrint,
   linuxSwapString,
   copyTestSrcDir
-} = require('./utils.js')
+} = require('./utils-for-tests.js')
 
 const cwd = process.cwd().toString()
 const customConfigPath = './test/test-custom-config-cli2.jsonc'

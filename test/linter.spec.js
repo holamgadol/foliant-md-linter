@@ -5,7 +5,7 @@ const {
   linkCheckFilePrint,
   linuxSwapString,
   copyTestSrcDir
-} = require('./utils.js')
+} = require('./utils-for-tests.js')
 
 const cwd = process.cwd().toString()
 const customConfigPath = './test/test-custom-config-cli2.jsonc'
@@ -27,6 +27,8 @@ test('First print', async () => {
   expect(result.code).toEqual(0)
 })
 
+// create-config
+
 test('create-config', async () => {
   const expectedStdout = ['']
   const result = await cli(['create-config'], '.')
@@ -37,7 +39,7 @@ test('create-config', async () => {
   expect(result.code).toEqual(0)
 })
 
-test('create-config', async () => {
+test('create-config -m full', async () => {
   const expectedStdout = ['']
   const result = await cli(['create-config', '-m full'], '.')
   expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
@@ -66,6 +68,50 @@ test('create-config -m typograph', async () => {
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
   expect(result.code).toEqual(0)
 })
+
+test('create-config --vs-code', async () => {
+  const expectedStdout = ['']
+  const result = await cli(['create-config', '--vs-code'], '.')
+  console.log(result)
+
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+  expect(fs.existsSync(`${cwd}/.vscode/settings.json`)).toBe(true)
+  fs.rmSync(`${cwd}/.vscode`, { recursive: true })
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('create-config --node-modules', async () => {
+  const expectedStdout = [
+    `${cwd}/node_modules/markdownlint-rules-foliant/lib/indented-fence`,
+    `${cwd}/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label`,
+    `${cwd}/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote`,
+    `${cwd}/node_modules/markdownlint-rules-foliant/lib/typograph`,
+    `${cwd}/node_modules/markdownlint-rules-foliant/lib/validate-internal-links`,
+    `${cwd}/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist`
+  ]
+
+  const result = await cli(['create-config', `--node-modules ${cwd}`], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+
+  const obj = JSON.parse(fs.readFileSync(`${cwd}/.markdownlint-cli2.jsonc`))
+  expectedStdout.forEach(element => expect(obj.customRules).toContain(element))
+
+  expect(result.code).toEqual(0)
+})
+
+test('create-config -w', async () => {
+  const result = await cli(['create-config', `-w ${cwd}`], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
+
+  const obj = JSON.parse(fs.readFileSync(`${cwd}/.markdownlint-cli2.jsonc`))
+  expect((obj.config['validate-internal-links'].workingDir === `${cwd}`)).toBe(true)
+
+  expect(result.code).toEqual(0)
+})
+
+// urls
 
 test('urls', async () => {
   const expectedStdout = [
@@ -133,6 +179,8 @@ test('urls -v -s no-errors-src -a', async () => {
   expectedStdout.forEach(element => expect(result.stdout).toContain(element))
   expect(result.code).toEqual(0)
 })
+
+// print
 
 test('print', async () => {
   await cli(['full-check', '-s alt-src', `-c ${customConfigPath}`], '.')

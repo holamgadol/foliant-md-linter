@@ -1,12 +1,25 @@
 #!/usr/bin/env node
 
+// Third-party modules
 const { Command } = require('commander')
 const path = require('path')
 const fs = require('fs')
 const program = new Command()
 const cwd = process.cwd().toString()
+const vscodeSettings = '.vscode/settings.json'
 
-function createConfig (mode = 'full', source = '', project = '', configPath = '', includesMap = '', nodeModulePath = '', workingDir = '', debug = false) {
+// Import utils.js
+const {
+  parseChapters,
+  updateListOfFiles,
+  existIncludes
+} = require('./utils.js')
+
+function createConfig (mode = 'full', source = '', project = '', configPath = '',
+  includesMap = '', nodeModulePath = '', workingDir = '', foliantConfig = '',
+  vscode = false, debug = false) {
+  let existIncludesMap = false
+  let listOfFiles = []
   // Set validate-internal-links config
   const validateIntLinksConf = {}
   validateIntLinksConf.src = source || undefined
@@ -26,6 +39,14 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
   ]
 
+  if (fs.existsSync(foliantConfig)) {
+    listOfFiles = parseChapters(foliantConfig, source, listOfFiles)
+    existIncludesMap = existIncludes(foliantConfig)
+    if (existIncludesMap) {
+      updateListOfFiles(source, includesMap, listOfFiles)
+    }
+  }
+  console.log(listOfFiles)
   const configFull = {
     MD001: true,
     MD004: { style: 'dash' },
@@ -56,6 +77,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     MD036: true,
     MD037: true,
     MD038: true,
+    MD039: false,
     MD040: true,
     MD041: true,
     MD045: true,
@@ -101,6 +123,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     MD036: false,
     MD037: false,
     MD038: false,
+    MD039: false,
     MD040: false,
     MD041: true,
     MD045: false,
@@ -153,6 +176,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     MD036: false,
     MD037: false,
     MD038: false,
+    MD039: false,
     MD040: false,
     MD041: false,
     MD042: false,
@@ -208,8 +232,34 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
   }
 
   const json = JSON.stringify({ customRules, config }, null, 4)
-  fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), json, 'utf8')
+  fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), json, { mode: 0o777 })
   console.log(`${mode} markdownlint config created successfully!`)
+
+  if (listOfFiles && vscode) {
+    const configExist = initVSCodeSettings(listOfFiles)
+    if (configExist) {
+      console.log(`${vscodeSettings} config updated successfully!`)
+    } else {
+      console.log(`${vscodeSettings} config created successfully!`)
+    }
+  }
+}
+
+function initVSCodeSettings (listOfFiles = []) {
+  const configExist = fs.existsSync(vscodeSettings)
+  let data = {
+    'markdownlint.lintWorkspaceGlobs': listOfFiles
+  }
+
+  if (configExist) {
+    const originalData = JSON.parse(fs.readFileSync(vscodeSettings))
+    data = Object.assign({}, originalData, data)
+    console.log(data)
+  } else {
+    fs.mkdirSync(path.dirname(vscodeSettings), { recursive: true })
+  }
+  fs.writeFileSync(vscodeSettings, JSON.stringify(data))
+  return configExist
 }
 
 program
@@ -223,9 +273,14 @@ program
   .option('--includes-map <includes-map>', 'includes map path', '')
   .option('--node-modules <node-modules-path>', 'custom path to node modules', '')
   .option('-w, --working-dir <working-dir>', 'working dir', '')
+  .option('--foliant-config <config-path>',
+    'the configuration file is a foliant from which chapters', 'foliant.yml')
+  .option('--vs-code',
+    'generate settings.json for vs code', false)
   .option('-d, --debug', 'output of debugging information', false)
 
 program.parse()
 
 const options = program.opts()
-createConfig(options.mode, options.source, options.project, options.configPath, options.includesMap, options.nodeModules, options.workingDir, options.debug)
+createConfig(options.mode, options.source, options.project, options.configPath,
+  options.includesMap, options.nodeModules, options.workingDir, options.foliantConfig, options.vsCode, options.debug)

@@ -10,14 +10,19 @@ const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
 const { unlink } = require('fs')
-const YAML = require('yaml')
+
+// Import utils.js
+const {
+  parseChapters,
+  updateListOfFiles,
+  existIncludes
+} = require('./utils.js')
 
 // The subprocess
 const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
 const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
-let listOfFiles = []
 
 // The log paths
 const markdownLintLog = '.markdownlint.log'
@@ -33,19 +38,45 @@ const usedFoliantConfig = path.resolve(cwd, 'only_includes_map.yml')
 const vscodeSettings = '.vscode/settings.json'
 
 // Options
-const verboseOption = new Option('-v, --verbose', 'print full linting results').default(false)
-const sourceOption = new Option('-s, --source <path-to-sources>', 'source directory').default(defaultSrc)
-const configOption = new Option('-c, --config <path-to-config>', 'path to custom config').default('')
-const projectOption = new Option('-p, --project <project-name>', 'project name').default('')
-const debugOption = new Option('-d, --debug', 'print executing command').default(false)
-const allowFailureOption = new Option('-a, --allow-failure', 'allow exit with failure if errors').default(false)
-const clearConfigOption = new Option('-l, --clear-config', 'remove markdownlint config after execution').default(false)
-const fixOption = new Option('-f, --fix', 'fix errors with markdownlint').default(false)
-const markdownlintModeOption = new Option('-m, --markdownlint-mode <mode-name>', 'set mode for markdownlint').choices(['full', 'slim', 'typograph', 'mdlint-default']).default('slim')
-const foliantConfigOption = new Option('--foliant-config <config-path>', 'the configuration file is a foliant from which chapters').default('foliant.yml')
-const nodeModulesOption = new Option('--node-modules <node-modules-path>', 'custom path to node modules').default('')
-const workingDirOption = new Option('-w --working-dir <working-dir>', 'working directory (required when using the extension for vs code)').default('')
-const vsCodeOption = new Option('--vs-code', 'enable change vs-code settings').default(false)
+const verboseOption = new Option('-v, --verbose',
+  'print full linting results')
+  .default(false)
+const sourceOption = new Option('-s, --source <path-to-sources>',
+  'source directory')
+  .default(defaultSrc)
+const configOption = new Option('-c, --config <path-to-config>',
+  'path to custom config')
+  .default('')
+const projectOption = new Option('-p, --project <project-name>',
+  'project name')
+  .default('')
+const debugOption = new Option('-d, --debug',
+  'print executing command')
+  .default(false)
+const allowFailureOption = new Option('-a, --allow-failure',
+  'allow exit with failure if errors')
+  .default(false)
+const clearConfigOption = new Option('-l, --clear-config',
+  'remove markdownlint config after execution')
+  .default(false)
+const fixOption = new Option('-f, --fix',
+  'fix errors with markdownlint')
+  .default(false)
+const markdownlintModeOption = new Option('-m, --markdownlint-mode <mode-name>',
+  'set mode for markdownlint')
+  .choices(['full', 'slim', 'typograph', 'mdlint-default'])
+  .default('slim')
+const foliantConfigOption = new Option('--foliant-config <config-path>',
+  'the configuration file is a foliant from which chapters')
+  .default('foliant.yml')
+const nodeModulesOption = new Option('--node-modules <node-modules-path>',
+  'custom path to node modules')
+  .default('')
+const workingDirOption = new Option('-w --working-dir <working-dir>',
+  'working directory (required when using the extension for vs code)')
+  .default('')
+const vsCodeOption = new Option('--vs-code',
+  'generate settings.json for vs code').default(false)
 
 // The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -160,64 +191,69 @@ function writeLog (logFile) {
 
 const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig,
-  nodeModules = '', workinDir = '', isFix = false, debug = false, vscode = false) {
+  nodeModules = '', workinDir = '', isFix = false, debug = false, vsCode = false) {
   const commands = {}
   const fix = (isFix === true) ? '-fix' : ''
-
-  let includesMapArg = ''
-  let configPathArg = ''
-  let projectArg = ''
-  let debugArg = ''
-  let nodeModulesArg = ''
-  let workinDirArg = ''
+  const args = []
   let filesArgMdLint = `"${src}/**/*.md"`
   let filesArgMdLinkCheck = `${src}/`
-  let includesMap = false
+  let existIncludesMap = false
+  let listOfFiles = []
 
   if (project) {
-    projectArg = ` -p "${project}"`
+    args.push(`-p "${project}"`)
   }
 
   if (debug) {
     console.log('command gen params:\n',
-      'src: ', src,
-      'configPath: ', configPath,
-      'project: ', project,
-      'markdownlintMode: ', markdownlintMode,
-      'foliantConfig: ', foliantConfig,
-      'nodeModules:', nodeModules,
-      'workinDir:', workinDir,
-      'isFix: ', isFix,
-      'debug: ', debug)
+      `src: ${src}`,
+      `configPath: ${configPath}`,
+      `project: ${project}`,
+      `markdownlintMode: ${markdownlintMode}`,
+      `foliantConfig: ${foliantConfig}`,
+      `nodeModules: ${nodeModules}`,
+      `workinDir: ${workinDir}`,
+      `isFix: ${isFix}`,
+      `debug: ${debug}`,
+      `vsCode: ${vsCode}`
+    )
   }
 
   // Working directory and node_modules
   if (workinDir) {
-    workinDirArg = ` --working-dir ${workinDir}`
+    args.push(`--working-dir ${workinDir}`)
   }
   if (nodeModules) {
-    nodeModulesArg = ` --node-modules ${nodeModules}`
+    args.push(`--node-modules ${nodeModules}`)
+  }
+
+  if (vsCode) {
+    args.push('--vs-code')
   }
 
   // Get list of files and creat includes map
   if (fs.existsSync(foliantConfig)) {
-    includesMap = prepare(foliantConfig, src)
+    listOfFiles = parseChapters(foliantConfig, src, listOfFiles)
+    existIncludesMap = existIncludes(foliantConfig)
+    args.push(`--foliant-config ${foliantConfig}`)
   }
 
   // Create includes map
-  if (includesMap) {
-    includesMapArg = ` --includes-map ${defaultIncludesMap}`
+  if (existIncludesMap) {
+    generateIncludesMap(foliantConfig)
+    updateListOfFiles(src, defaultIncludesMap, listOfFiles)
+    args.push(`--includes-map ${defaultIncludesMap}`)
   }
 
   if (configPath && fs.existsSync(configPath)) {
-    configPathArg = ` -c ${configPath}`
+    args.push(`-c ${configPath}`)
   }
 
   if (debug) {
-    debugArg = ' -d'
+    args.push('-d')
   }
 
-  if (vscode) {
+  if (vsCode) {
     initVSCodeSettings(listOfFiles)
   }
 
@@ -232,8 +268,11 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   }
 
   // Create config
-  commands.createMarkdownlintConfig = (markdownlintMode !== 'mdlint-default') ? `node ${path.join(__dirname, '/generate.js')} -m ${markdownlintMode} -s ${src}${projectArg}${configPathArg}${debugArg}${includesMapArg}${nodeModulesArg}${workinDirArg}` : 'echo "using default markdownlint config"'
-  console.log(commands.createMarkdownlintConfig)
+  commands.createMarkdownlintConfig = (markdownlintMode !== 'mdlint-default') ? `node ${path.join(__dirname, '/generate.js')} -m ${markdownlintMode} -s ${src} ${args.join(' ')}` : 'echo "using default markdownlint config"'
+  if (debug) {
+    console.log(commands.createMarkdownlintConfig)
+  }
+
   // Markdownlint
   commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} ${filesArgMdLint} ${writeLog(markdownLintLog)}`
 
@@ -251,74 +290,15 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   }
 }
 
-function prepare (foliantConfig, sourceDir) {
-  // Def custom tags
-  const env = {
-    tag: '!env',
-    resolve: str => str
-  }
-  const include = {
-    tag: '!include',
-    resolve: str => ''
-  }
-  const path = {
-    tag: '!path',
-    resolve: str => str
-  }
-  const from = {
-    tag: '!from',
-    resolve: str => ''
-  }
+function generateIncludesMap (foliantConfig) {
+  createConfigIncludesMap(foliantConfig)
+  const genIncludesMapCommand = `foliant make --config ${usedFoliantConfig} pre --logs .temp_project_logs ${writeLog(genIncludesMapLog)} && rm -rf temp_project.pre/ && rm -rf .temp_project_logs/`
 
-  // Get foliant config
-  const configPath = fs.readFileSync(foliantConfig, 'utf8')
-  const config = YAML.parse(configPath, { customTags: [env, include, path, from] })
-  eachRecursive(config.chapters, listOfFiles, sourceDir)
-
-  // Exist includes in list of preprocessors
-  const existInclude = config.preprocessors.includes('includes')
-
-  // Create includes map
-  if (existInclude) {
-    createConfigIncludesMap(foliantConfig)
-    const genIncludesMapCommand = `foliant make --config ${usedFoliantConfig} pre --logs .temp_project_logs ${writeLog(genIncludesMapLog)} && rm -rf temp_project.pre/ && rm -rf .temp_project_logs/`
-    execSync(genIncludesMapCommand, { shell: shell }, (err) => {
-      if (err) {
-        console.error(err)
-      }
-    })
-
-    // Get files from includes map
-    const includesMapContent = JSON.parse(fs.readFileSync(defaultIncludesMap, 'utf8'))
-    eachRecursive(includesMapContent, listOfFiles, sourceDir)
-  }
-  // Remove duplicates
-  listOfFiles = [...new Set(listOfFiles)]
-
-  return existInclude
-}
-
-function eachRecursive (obj, list, sourceDir) {
-  for (const k in obj) {
-    if (typeof obj[k] === 'string') {
-      const s = obj[k]
-      if (s.endsWith('.md')) {
-        if (s.startsWith(sourceDir)) {
-          if (fs.existsSync(s)) {
-            list.push(s)
-          }
-        } else {
-          if (!s.startsWith('http')) {
-            if (fs.existsSync(`${sourceDir}/${s}`)) {
-              list.push(`${sourceDir}/${s}`)
-            }
-          }
-        }
-      }
-    } else {
-      eachRecursive(obj[k], list, sourceDir)
+  execSync(genIncludesMapCommand, { shell: shell }, (err) => {
+    if (err) {
+      console.error(err)
     }
-  }
+  })
 }
 
 function clearConfigFile (clearConfig) {
@@ -364,6 +344,13 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
   if (debug) {
     console.log('executed command: ')
     console.log(command)
+    console.log(
+      'command execute params:\n',
+      `verbose: ${verbose}`,
+      `debug: ${debug}`,
+      `allowFailure: ${allowFailure}`,
+      `clearConfig: ${clearConfig}`
+    )
   }
   if (verbose === false) {
     exec(command, { shell: shell }, (err, stdout, stderror) => {
