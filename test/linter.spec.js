@@ -84,12 +84,12 @@ test('create-config --vs-code', async () => {
 
 test('create-config --node-modules', async () => {
   const expectedStdout = [
-    `${cwd}/node_modules/markdownlint-rules-foliant/lib/indented-fence`,
-    `${cwd}/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label`,
-    `${cwd}/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote`,
-    `${cwd}/node_modules/markdownlint-rules-foliant/lib/typograph`,
-    `${cwd}/node_modules/markdownlint-rules-foliant/lib/validate-internal-links`,
-    `${cwd}/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist`
+    path.resolve(cwd, 'node_modules', 'markdownlint-rules-foliant', 'lib', 'indented-fence'),
+    path.resolve(cwd, 'node_modules', 'markdownlint-rules-foliant', 'lib', 'non-literal-fence-label'),
+    path.resolve(cwd, 'node_modules', 'markdownlint-rules-foliant', 'lib', 'fenced-code-in-quote'),
+    path.resolve(cwd, 'node_modules', 'markdownlint-rules-foliant', 'lib', 'typograph'),
+    path.resolve(cwd, 'node_modules', 'markdownlint-rules-foliant', 'lib', 'validate-internal-links'),
+    path.resolve(cwd, 'node_modules', 'markdownlint-rules-foliant', 'lib', 'frontmatter-tags-exist')
   ]
 
   const result = await cli(['create-config', `--node-modules ${cwd}`], '.')

@@ -196,7 +196,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   const fix = (isFix === true) ? '-fix' : ''
   const args = []
   let filesArgMdLint = `"${src}/**/*.md"`
-  let filesArgMdLinkCheck = `${src}/`
+  let filesArgMdLinkCheck = (isWin === true) ? `${src}` : `${src}/`
   let existIncludesMap = false
   let listOfFiles = []
 
