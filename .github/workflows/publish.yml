@@ -18,7 +18,7 @@ jobs:
           node-version: 18
       - run: npm install --no-package-lock
       - run: npm run lint
-      - run: npm test
+      - run: npm test --runInBand
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}

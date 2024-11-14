@@ -27,7 +27,7 @@ npm i foliant-md-linter
 
 You can invoke foliant-md-linter in a Foliant building process.
 
-#### Prerequisites 
+#### Prerequisites
 
 - Install _foliant-md-linter_ into your Docker-image if you're using a building within Docker:
 
@@ -68,14 +68,14 @@ if you haven't installed it yet:
   $ foliant make site --with mkdocs
   Parsing config... Done
   Applying preprocessor runcommands... markdownlint-cli2 v0.4.0 (markdownlint v0.25.1)
-  
+
   Finding: src/**/*.md
   ...
   Found 5 styleguide and formatting errors
   Full markdownlint log see in /usr/src/app/.markdownlint_full.log
-  
+
   removing /usr/src/app/.markdownlint-cli2.jsonc ...
-  
+
   Done
   Applying preprocessor mkdocs... Done
   ...
@@ -83,42 +83,45 @@ if you haven't installed it yet:
 
 ## Usage
 
-Run _foliant-md-linter_ from the project root with following commands and options
+Run _foliant-md-linter_ from the project root with following commands and options:
 
-- `full-check` Check md files with markdownlint and markdown-link-check
-    - `-v`, `--verbose` Print full linting results (default: false)
-    - `-s`, `--source <path-to-sources>` specify source directory (default: _src_)
-    - `-c`, `--config` Do not create a new markdownlint config file and use default or one in root directory instead (default: false)
-    - `-p`, `--project <project-name>` specify project name
-    - `-d`, `--debug` print executing command (default: false)
-    - `-f`, `--allowfailure` allow exit with failure if errors (default: false)
-  
+- `full-check` – check md files with markdownlint and markdown-link-check
+    - `-v`, `--verbose` – print full linting results (default: false)
+    - `-s`, `--source <path-to-sources>` – specify source directory (default: _src_)
+    - `-c`, `--config <path-to-sources>` – path to custom config
+    - `-p`, `--project <project-name>` – specify project name
+    - `-d`, `--debug` – print executing command (default: false)
+    - `-a`, `--allowfailure` – allow exit with failure if errors (default: false)
+    - `--node-modules <node-modules-path>` – custom path to node modules (the command to get the path to the node modules `npm list -g | head -1`)
+    - `-w --working-dir <working-dir>` – the working directory should be set if the project folder differs from the CWD. For example, when using the linter in vs code (the command to get the path to the working dir `pwd` in the foliant project folder)
+
       _helpful in CI/CD, as you can cause pipelines to fail in case of linting errors_
-  
-    - `-l`, `--clearconfig` remove markdownlint config after execution (default: false)
+
+    - `-l`, `--clearconfig` – remove markdownlint config after execution (default: false)
 
       _helpful within docker, otherwise annoying bugs are occurred with the markdownlint extension for VSCode_
 
-- `essential` Check md files for critical formatting errors with markdownlint and validate external links ith markdown-link-check
-  - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
-- `urls` Validate external links with markdown-link-check
-    - `-v`, `-s`, `-d`, `-f`, `-l`
-- `styleguide` Check for styleguide adherence with markdownlint
-    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
-- `slim` Check for critical errors with markdownlint
-    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
-- `fix` Fix formatting errors with markdownlint
-    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
-- `typograph` Fix typograph errors with markdownlint
-    - `-v`, `-s`, `-c`, `-p`, `-d`, `-f`, `-l`
-- `print` Print linting results
+    - `-f`, `--fix` – fix formatting errors with markdownlint (default: false)
+    - `-m`, `--markdownlintmode` – set mode for markdownlint. 
+      Possible values:
+        - `full` – check md files with markdownlint and markdown-link-check
+        - `slim` (default value) – check for critical errors with markdownlint
+        - `typograph` – fix typograph errors with markdownlint
+        - `mdlint-default` – check md files for critical formatting errors with markdownlint and validate external links with markdown-link-check
+
+    - `--includes-map` – set the path to the includes map (default: false)
+    - `--foliant-config` – set the configuration file is a foliant from which chapters (default: `./foliant.yml`)
+
+- `markdown` – check md files for errors with markdownlint
+    - `-v`, `-s`, `-c`, `-d`, `-a`, `-l`, `-f`, `-m`, `--includes-map`, `--foliant-config`
+- `urls` validate external links with markdown-link-check
+    - `-v`, `-s`, `-d`, `-a`, `-l`
+- `print` print linting results
     - `-v`
-- `create-full-config` Create markdownlint config for styleguide adherence
-    - `-s`, `-p`, `-d`
-- `create-slim-config` Create markdownlint config for critical errors check
-    - `-s`, `-p`, `-d`
-- `create-typograph-config` Create typograph config for typograph errors check
-    - `-s`, `-p`, `-d`
+- `create-config` create markdownlint config for styleguide adherence
+    - `-v`, `-s`, `-p`, `-d`, `-m`
+
+`.markdownlintignore` – an exception file, each line of which can contain a glob.
 
 ### Examples
 

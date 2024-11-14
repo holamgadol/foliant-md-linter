@@ -1,7 +1,7 @@
 {
   "ignorePatterns": [
     {
-      "pattern": "^(?!http).+"
+      "pattern": "^(?!http).*"
     }
   ],
   "timeout": "20s",
