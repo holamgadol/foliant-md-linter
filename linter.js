@@ -332,7 +332,7 @@ function initVSCodeSettings (listOfFiles = []) {
     'markdownlint.lintWorkspaceGlobs': listOfFiles
   }
   if (fs.existsSync(vscodeSettings)) {
-    const originalData = fs.readFileSync(vscodeSettings)
+    const originalData = JSON.parse(fs.readFileSync(vscodeSettings))
     data = Object.assign({}, originalData, data)
   } else {
     fs.mkdirSync(path.dirname(vscodeSettings), { recursive: true })
