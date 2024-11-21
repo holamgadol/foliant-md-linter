@@ -17,15 +17,20 @@ const {
 
 function createConfig (mode = 'full', source = '', project = '', configPath = '',
   includesMap = '', nodeModulePath = '', workingDir = '', foliantConfig = '',
-  vscode = false, debug = false) {
+  vscode = false, debug = false, format = '') {
   let existIncludesMap = false
   let listOfFiles = []
+
   // Set validate-internal-links config
   const validateIntLinksConf = {}
   validateIntLinksConf.src = source || undefined
   validateIntLinksConf.project = project || undefined
-  validateIntLinksConf.includesMap = includesMap || undefined
-  validateIntLinksConf.workingDir = workingDir || undefined
+  if (includesMap) {
+    validateIntLinksConf.includesMap = includesMap
+  }
+  if (workingDir) {
+    validateIntLinksConf.workingDir = workingDir
+  }
 
   let customRules = [
     './node_modules/markdownlint-rules-foliant/lib/indented-fence',
@@ -54,7 +59,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
       updateListOfFiles(source, includesMap, listOfFiles)
     }
   }
-  console.log(listOfFiles)
+
   const configFull = {
     MD001: true,
     MD004: { style: 'dash' },
@@ -224,11 +229,11 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     try {
       const customConfig = JSON.parse(fs.readFileSync(path.resolve(cwd, configPath), 'utf-8'))
       config = Object.assign({}, config, customConfig)
-    } catch (err) {
-      if (err instanceof SyntaxError) {
+    } catch (error) {
+      if (error instanceof SyntaxError) {
         console.error('Invalid JSON format')
       } else {
-        console.error(err)
+        console.error(error)
       }
       mode = 'slim'
       config = configSlim
@@ -239,9 +244,38 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     console.log(config)
   }
 
-  const json = JSON.stringify({ customRules, config }, null, 4)
-  fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), json, { mode: 0o777 })
-  console.log(`${mode} markdownlint config created successfully!`)
+  const json = { customRules, config }
+  if (format === 'cjs') {
+    validateIntLinksConf.includesMap = undefined
+    const includesMapPath = path.relative('./', includesMap)
+    let content = `// @ts-check
+    \r"use strict";
+    \rconst path = require('path')
+    \rconst json = ${JSON.stringify(json, null, 4)}
+    \rjson.config['validate-internal-links'].workingDir = __dirname`
+
+    if (existIncludesMap) {
+      content = content + `\njson.config['validate-internal-links'].includesMap = require("./${includesMapPath}")`
+    }
+    content = content + '\n\nmodule.exports = { ...json }'
+    try {
+      fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.cjs'), content, { mode: 0o777 })
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+    console.log(`${mode} markdownlint config '.markdownlint-cli2.cjs' created successfully!`)
+  } else {
+    const content = JSON.stringify({ customRules, config }, null, 4)
+
+    try {
+      fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), content, { mode: 0o777 })
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+    console.log(`${mode} markdownlint config '.markdownlint-cli2.jsonc' created successfully!`)
+  }
 
   if (listOfFiles && vscode) {
     const configExist = initVSCodeSettings(listOfFiles)
@@ -266,13 +300,20 @@ function initVSCodeSettings (listOfFiles = []) {
   } else {
     fs.mkdirSync(path.dirname(vscodeSettings), { recursive: true })
   }
-  fs.writeFileSync(vscodeSettings, JSON.stringify(data))
+
+  try {
+    fs.writeFileSync(vscodeSettings, JSON.stringify(data))
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+
   return configExist
 }
 
 program
   .name('create-markdownlint-config')
-  .description('script for generating .markdownlint-cli2.jsonc in foliant-project root')
+  .description('script for generating markdownlint-cli2 config in foliant-project root')
   .version('0.0.1')
   .option('-m, --mode <mode>', 'full, slim, typograph or default config', 'slim')
   .option('-s, --source <source>', 'relative path to source directory', '')
@@ -285,10 +326,13 @@ program
     'the configuration file is a foliant from which chapters', 'foliant.yml')
   .option('--vs-code',
     'generate settings.json for vs code', false)
+  .option('--format <format>',
+    'config format: "jsonc" or "cjs"', 'jsonc')
   .option('-d, --debug', 'output of debugging information', false)
 
 program.parse()
 
 const options = program.opts()
 createConfig(options.mode, options.source, options.project, options.configPath,
-  options.includesMap, options.nodeModules, options.workingDir, options.foliantConfig, options.vsCode, options.debug)
+  options.includesMap, options.nodeModules, options.workingDir,
+  options.foliantConfig, options.vsCode, options.debug, options.format)

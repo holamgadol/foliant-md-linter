@@ -77,6 +77,9 @@ const workingDirOption = new Option('-w --working-dir <working-dir>',
   .default('')
 const vsCodeOption = new Option('--vs-code',
   'generate settings.json for vs code').default(false)
+const formatOptions = new Option('--format',
+  'format of the config file')
+  .default('jsonc')
 
 // The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -191,7 +194,7 @@ function writeLog (logFile) {
 
 const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig,
-  nodeModules = '', workinDir = '', isFix = false, debug = false, vsCode = false) {
+  nodeModules = '', workinDir = '', isFix = false, debug = false, vsCode = false, format = '') {
   const commands = {}
   const fix = (isFix === true) ? '-fix' : ''
   const args = []
@@ -219,16 +222,21 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
     )
   }
 
-  // Working directory and node_modules
-  if (workinDir) {
-    args.push(`--working-dir ${workinDir}`)
-  }
   if (nodeModules) {
     args.push(`--node-modules ${nodeModules}`)
   }
 
   if (vsCode) {
     args.push('--vs-code')
+  }
+
+  // Working directory and node_modules
+  if (workinDir) {
+    args.push(`--working-dir ${workinDir}`)
+  }
+
+  if (format) {
+    args.push(`--format ${format}`)
   }
 
   // Get list of files and creat includes map
@@ -438,10 +446,11 @@ program.command('full-check')
   .addOption(foliantConfigOption)
   .addOption(nodeModulesOption)
   .addOption(workingDirOption)
+  .addOption(formatOptions)
   .action((options) => {
     execute(commandsGen(options.source, options.config, options.project,
       options.markdownlintmode, options.foliantConfig, options.nodeModules,
-      options.workingDir, options.fix, options.debug).commands.lintSrcFull,
+      options.workingDir, options.fix, options.debug, options.format).commands.lintSrcFull,
     options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
@@ -459,10 +468,11 @@ program.command('markdown')
   .addOption(foliantConfigOption)
   .addOption(nodeModulesOption)
   .addOption(workingDirOption)
+  .addOption(formatOptions)
   .action((options) => {
     execute(commandsGen(options.source, options.config, options.project,
       options.markdownlintMode, options.foliantConfig, options.nodeModules,
-      options.workingDir, options.fix, options.debug).commands.markdownlint,
+      options.workingDir, options.fix, options.debug, options.format).commands.markdownlint,
     options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
@@ -474,9 +484,10 @@ program.command('urls')
   .addOption(allowFailureOption)
   .addOption(clearConfigOption)
   .addOption(workingDirOption)
+  .addOption(formatOptions)
   .action((options) => {
     execute(commandsGen(options.source, options.config, options.nodeModules,
-      options.workingDir, options.debug).commands.markdownlinkcheck,
+      options.workingDir, options.debug, options.format).commands.markdownlinkcheck,
     options.verbose, options.debug, options.allowFailure, options.clearConfig)
   })
 
@@ -498,10 +509,11 @@ program.command('create-config')
   .addOption(nodeModulesOption)
   .addOption(workingDirOption)
   .addOption(vsCodeOption)
+  .addOption(formatOptions)
   .action((options) => {
     execute(commandsGen(options.source, options.config, options.project,
       options.markdownlintMode, options.foliantConfig, options.nodeModules,
-      options.workingDir, options.fix, options.debug, options.vsCode).commands.createMarkdownlintConfig,
+      options.workingDir, options.fix, options.debug, options.vsCode, options.format).commands.createMarkdownlintConfig,
     options.verbose, options.debug)
   })
 
