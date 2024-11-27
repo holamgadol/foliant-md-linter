@@ -25,12 +25,8 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
   const validateIntLinksConf = {}
   validateIntLinksConf.src = source || undefined
   validateIntLinksConf.project = project || undefined
-  if (includesMap) {
-    validateIntLinksConf.includesMap = includesMap
-  }
-  if (workingDir) {
-    validateIntLinksConf.workingDir = workingDir
-  }
+  validateIntLinksConf.includesMap = includesMap || './includes_map.json'
+  validateIntLinksConf.workingDir = workingDir || undefined
 
   let customRules = [
     './node_modules/markdownlint-rules-foliant/lib/indented-fence',
@@ -247,19 +243,21 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
   const json = { customRules, config }
   if (format === 'cjs') {
     validateIntLinksConf.includesMap = undefined
+    validateIntLinksConf.project = undefined
+    validateIntLinksConf.workingDir = undefined
     const includesMapPath = path.relative('./', includesMap)
-    let content = `// @ts-check
-    \r"use strict";
-    \rconst path = require('path')
-    \rconst json = ${JSON.stringify(json, null, 4)}
-    \rjson.config['validate-internal-links'].workingDir = __dirname`
+    const content = []
+    content.push('// @ts-check\n\n"use strict";\n\n')
+    content.push("const path = require('path')")
+    content.push("const repoName = require('git-repo-name')")
+    content.push(`const json = ${JSON.stringify(json, null, 4)}`)
+    content.push('json.config[\'validate-internal-links\'].project = repoName.sync({cwd: __dirname})')
+    content.push('json.config[\'validate-internal-links\'].workingDir = __dirname')
+    content.push(`json.config['validate-internal-links'].includesMap = require("./${includesMapPath}")`)
+    content.push('\n\nmodule.exports = json')
 
-    if (existIncludesMap) {
-      content = content + `\njson.config['validate-internal-links'].includesMap = require("./${includesMapPath}")`
-    }
-    content = content + '\n\nmodule.exports = { ...json }'
     try {
-      fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.cjs'), content, { mode: 0o777 })
+      fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.cjs'), content.join('\n'), { mode: 0o777 })
     } catch (error) {
       console.log(error)
       process.exit(1)
@@ -327,7 +325,8 @@ program
   .option('--vs-code',
     'generate settings.json for vs code', false)
   .option('--format <format>',
-    'config format: "jsonc" or "cjs"', 'jsonc')
+    'config for markdownlint-cli2 (default"jsonc") or "cjs" format with automatic parameter detection',
+    'jsonc')
   .option('-d, --debug', 'output of debugging information', false)
 
 program.parse()
