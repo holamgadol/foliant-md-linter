@@ -15,7 +15,6 @@
   "scripts": {
     "lint": "eslint .",
     "test": "jest --runInBand",
-    "prepare": "husky install",
     "validate": "npm run lint && npm test"
   },
   "dependencies": {

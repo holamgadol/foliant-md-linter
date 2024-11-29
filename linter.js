@@ -77,7 +77,7 @@ const workingDirOption = new Option('-w --working-dir <working-dir>',
   .default('')
 const vsCodeOption = new Option('--vs-code',
   'generate settings.json for vs code').default(false)
-const formatOptions = new Option('--format',
+const formatOptions = new Option('--format <format>',
   'format of the config file')
   .default('jsonc')
 

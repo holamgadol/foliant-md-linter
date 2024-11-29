@@ -4,6 +4,8 @@
 const { Command } = require('commander')
 const path = require('path')
 const fs = require('fs')
+const childProcess = require('child_process')
+
 const program = new Command()
 const cwd = process.cwd().toString()
 const vscodeSettings = '.vscode/settings.json'
@@ -241,19 +243,22 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
   }
 
   const json = { customRules, config }
+  let configExist = false
   if (format === 'cjs') {
     validateIntLinksConf.includesMap = undefined
     validateIntLinksConf.project = undefined
     validateIntLinksConf.workingDir = undefined
     const includesMapPath = path.relative('./', includesMap)
     const content = []
+    json.globs = listOfFiles
     content.push('// @ts-check\n\n"use strict";\n\n')
     content.push("const path = require('path')")
     content.push("const repoName = require('git-repo-name')")
     content.push(`const json = ${JSON.stringify(json, null, 4)}`)
     content.push('json.config[\'validate-internal-links\'].project = repoName.sync({cwd: __dirname})')
     content.push('json.config[\'validate-internal-links\'].workingDir = __dirname')
-    content.push(`json.config['validate-internal-links'].includesMap = require("./${includesMapPath}")`)
+    content.push(`json.config['validate-internal-links'].includesMap = "./${includesMapPath}"`)
+
     content.push('\n\nmodule.exports = json')
 
     try {
@@ -263,6 +268,27 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
       process.exit(1)
     }
     console.log(`${mode} markdownlint config '.markdownlint-cli2.cjs' created successfully!`)
+
+    if (vscode) {
+      // disabling globs used by the markdownlint extension
+      configExist = initVSCodeSettings([])
+    }
+
+    // write package.json
+    const packageJSONforCJS = {
+      dependencies: {
+        'markdownlint-rules-foliant': 'latest',
+        'git-repo-name': '^1.0.1'
+      }
+    }
+    fs.writeFileSync(path.resolve(cwd, 'package.json'), JSON.stringify(packageJSONforCJS, null, 4), { mode: 0o777 })
+
+    // install dependencies
+    childProcess.execSync('npm i .', { stdio: [0, 1, 2] })
+
+    // remove package.json
+    fs.rmSync(path.resolve(cwd, 'package.json'))
+    fs.rmSync(path.resolve(cwd, 'package-lock.json'))
   } else {
     const content = JSON.stringify({ customRules, config }, null, 4)
 
@@ -273,10 +299,12 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
       process.exit(1)
     }
     console.log(`${mode} markdownlint config '.markdownlint-cli2.jsonc' created successfully!`)
-  }
 
-  if (listOfFiles && vscode) {
-    const configExist = initVSCodeSettings(listOfFiles)
+    if (vscode) {
+      configExist = initVSCodeSettings(listOfFiles)
+    }
+  }
+  if (vscode) {
     if (configExist) {
       console.log(`${vscodeSettings} config updated successfully!`)
     } else {
