@@ -27,7 +27,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
   const validateIntLinksConf = {}
   validateIntLinksConf.src = source || undefined
   validateIntLinksConf.project = project || undefined
-  validateIntLinksConf.includesMap = includesMap || './includes_map.json'
+  validateIntLinksConf.includesMap = includesMap || undefined
   validateIntLinksConf.workingDir = workingDir || undefined
 
   let customRules = [

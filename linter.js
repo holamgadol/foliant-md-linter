@@ -33,7 +33,7 @@ const genIncludesMapLog = '.gen_includes_map.log'
 const defaultConfig = path.resolve(cwd, '.markdownlint-cli2')
 const defaultSrc = 'src'
 const defaultFoliantConfig = path.resolve(cwd, 'foliant.yml')
-const defaultIncludesMap = 'includes_map.json'
+const defaultIncludesMap = './includes_map.json'
 const usedFoliantConfig = path.resolve(cwd, 'only_includes_map.yml')
 
 // Options
