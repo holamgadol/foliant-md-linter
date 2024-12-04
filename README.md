@@ -133,9 +133,9 @@ These arguments will be make automatically using the `path` and `git-repo-name` 
 
 The configuration file will list all the files specified in the `chapters` and `includes_map` sections for use as "globs".
 
-To use the `lint all markdown files` function with the markdownlint extension for VS Code, a file will be added to the project folder `.vscode/settings.json`.
+To use the `lint all markdown files` function with [the markdownlint extension for VS Code](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint), a file will be added to the project folder `.vscode/settings.json`.
 Checking of all files will be disabled in this file, but the list of files that need to be checked will remain in the `cjs` file.
-So you can use the `lint all markdown files` function  in vs code, but it will check only those files that will be contained in chapters, and in includes_map.json
+So you can use the `lint all markdown files` function  in VS Code, but it will check only those files that will be contained in chapters, and in includes_map.json
 
 ### Examples
 
