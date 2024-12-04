@@ -19,7 +19,7 @@ const {
 
 function createConfig (mode = 'full', source = '', project = '', configPath = '',
   includesMap = '', nodeModulePath = '', workingDir = '', foliantConfig = '',
-  vscode = false, debug = false, format = '') {
+  debug = false, format = '') {
   let existIncludesMap = false
   let listOfFiles = []
 
@@ -245,19 +245,24 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
   const json = { customRules, config }
   let configExist = false
   if (format === 'cjs') {
-    validateIntLinksConf.includesMap = undefined
-    validateIntLinksConf.project = undefined
-    validateIntLinksConf.workingDir = undefined
-    const includesMapPath = path.relative('./', includesMap)
     const content = []
     json.globs = listOfFiles
     content.push('// @ts-check\n\n"use strict";\n\n')
-    content.push("const path = require('path')")
-    content.push("const repoName = require('git-repo-name')")
+    if (json.config.validateIntLinksConf) {
+      content.push("const path = require('path')")
+      content.push("const repoName = require('git-repo-name')")
+    }
+
     content.push(`const json = ${JSON.stringify(json, null, 4)}`)
-    content.push('json.config[\'validate-internal-links\'].project = repoName.sync({cwd: __dirname})')
-    content.push('json.config[\'validate-internal-links\'].workingDir = __dirname')
-    content.push(`json.config['validate-internal-links'].includesMap = "./${includesMapPath}"`)
+
+    if (json.config.validateIntLinksConf) {
+      content.push('json.config[\'validate-internal-links\'].project = repoName.sync({cwd: __dirname})')
+      content.push('json.config[\'validate-internal-links\'].workingDir = __dirname')
+    }
+    if (includesMap) {
+      const includesMapPath = path.relative('./', includesMap)
+      content.push(`json.config['validate-internal-links'].includesMap = "./${includesMapPath}"`)
+    }
 
     content.push('\n\nmodule.exports = json')
 
@@ -269,26 +274,40 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     }
     console.log(`${mode} markdownlint config '.markdownlint-cli2.cjs' created successfully!`)
 
-    if (vscode) {
-      // disabling globs used by the markdownlint extension
-      configExist = initVSCodeSettings([])
-    }
+    // disabling globs used by the markdownlint extension
+    configExist = initVSCodeSettings([])
 
-    // write package.json
-    const packageJSONforCJS = {
-      dependencies: {
-        'markdownlint-rules-foliant': 'latest',
-        'git-repo-name': '^1.0.1'
+    const existPackageJSON = fs.existsSync('package.json')
+    if (existPackageJSON) {
+      const data = JSON.parse(fs.readFileSync('package.json'))
+      data.dependencies['git-repo-name'] = '^1.0.1'
+      data.dependencies['markdownlint-rules-foliant'] = 'latest'
+      fs.writeFileSync('package.json', JSON.stringify(data, null, 2))
+    } else {
+      // write package.json
+      const packageJSONforCJS = {
+        dependencies: {
+          'markdownlint-rules-foliant': 'latest',
+          'git-repo-name': '^1.0.1'
+        }
       }
+      fs.writeFileSync(path.resolve(cwd, 'package.json'), JSON.stringify(packageJSONforCJS, null, 2), { mode: 0o777 })
     }
-    fs.writeFileSync(path.resolve(cwd, 'package.json'), JSON.stringify(packageJSONforCJS, null, 4), { mode: 0o777 })
 
     // install dependencies
     childProcess.execSync('npm i .', { stdio: [0, 1, 2] })
 
-    // remove package.json
-    fs.rmSync(path.resolve(cwd, 'package.json'))
-    fs.rmSync(path.resolve(cwd, 'package-lock.json'))
+    if (!existPackageJSON) {
+      // remove package.json
+      fs.rmSync(path.resolve(cwd, 'package.json'))
+      fs.rmSync(path.resolve(cwd, 'package-lock.json'))
+    }
+
+    if (configExist) {
+      console.log(`${vscodeSettings} config updated successfully!`)
+    } else {
+      console.log(`${vscodeSettings} config created successfully!`)
+    }
   } else {
     const content = JSON.stringify({ customRules, config }, null, 4)
 
@@ -299,17 +318,6 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
       process.exit(1)
     }
     console.log(`${mode} markdownlint config '.markdownlint-cli2.jsonc' created successfully!`)
-
-    if (vscode) {
-      configExist = initVSCodeSettings(listOfFiles)
-    }
-  }
-  if (vscode) {
-    if (configExist) {
-      console.log(`${vscodeSettings} config updated successfully!`)
-    } else {
-      console.log(`${vscodeSettings} config created successfully!`)
-    }
   }
 }
 
@@ -322,7 +330,6 @@ function initVSCodeSettings (listOfFiles = []) {
   if (configExist) {
     const originalData = JSON.parse(fs.readFileSync(vscodeSettings))
     data = Object.assign({}, originalData, data)
-    console.log(data)
   } else {
     fs.mkdirSync(path.dirname(vscodeSettings), { recursive: true })
   }
@@ -350,8 +357,6 @@ program
   .option('-w, --working-dir <working-dir>', 'working dir', '')
   .option('--foliant-config <config-path>',
     'the configuration file is a foliant from which chapters', 'foliant.yml')
-  .option('--vs-code',
-    'generate settings.json for vs code', false)
   .option('--format <format>',
     'config for markdownlint-cli2 (default"jsonc") or "cjs" format with automatic parameter detection',
     'jsonc')
@@ -362,4 +367,4 @@ program.parse()
 const options = program.opts()
 createConfig(options.mode, options.source, options.project, options.configPath,
   options.includesMap, options.nodeModules, options.workingDir,
-  options.foliantConfig, options.vsCode, options.debug, options.format)
+  options.foliantConfig, options.debug, options.format)

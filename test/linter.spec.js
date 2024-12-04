@@ -27,7 +27,7 @@ test('First print', async () => {
   expect(result.code).toEqual(0)
 })
 
-// create-config
+// create-config jsonc
 
 test('create-config', async () => {
   const expectedStdout = ['']
@@ -69,19 +69,6 @@ test('create-config -m typograph', async () => {
   expect(result.code).toEqual(0)
 })
 
-test('create-config --vs-code', async () => {
-  const expectedStdout = ['']
-  const result = await cli(['create-config', '--vs-code'], '.')
-  console.log(result)
-
-  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.jsonc`)).toBe(true)
-  expect(fs.existsSync(`${cwd}/.vscode/settings.json`)).toBe(true)
-  fs.rmSync(`${cwd}/.vscode`, { recursive: true })
-
-  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
-  expect(result.code).toEqual(0)
-})
-
 test('create-config --node-modules', async () => {
   const expectedStdout = [
     path.resolve(cwd, 'node_modules', 'markdownlint-rules-foliant', 'lib', 'indented-fence'),
@@ -108,6 +95,48 @@ test('create-config -w', async () => {
   const obj = JSON.parse(fs.readFileSync(`${cwd}/.markdownlint-cli2.jsonc`))
   expect((obj.config['validate-internal-links'].workingDir === `${cwd}`)).toBe(true)
 
+  expect(result.code).toEqual(0)
+})
+
+// create-config cjs
+
+test('create-config --format cjs', async () => {
+  const expectedStdout = ['']
+  const result = await cli(['create-config', '--format cjs'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.cjs`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('create-config -m full --format cjs', async () => {
+  const expectedStdout = ['']
+  const result = await cli(['create-config', '-m full', '--format cjs'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.cjs`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('create-config -m slim --format cjs', async () => {
+  const expectedStdout = ['']
+  const result = await cli(['create-config', '-m slim', '--format cjs'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.cjs`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
+  expect(result.code).toEqual(0)
+})
+
+test('create-config -m typograph --format cjs', async () => {
+  const expectedStdout = ['']
+  const result = await cli(['create-config', '-m typograph', '--format cjs'], '.')
+  expect(fs.existsSync(`${cwd}/.markdownlint-cli2.cjs`)).toBe(true)
+  console.log(result)
+
+  expectedStdout.forEach(element => expect(result.stdout).toContain(element))
   expect(result.code).toEqual(0)
 })
 

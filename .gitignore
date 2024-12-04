@@ -2,6 +2,7 @@ node_modules/
 package-lock.json
 *.log
 .markdownlint-cli2.jsonc
+.markdownlint-cli2.cjs
 .idea
 .DS_store
 /alt-src

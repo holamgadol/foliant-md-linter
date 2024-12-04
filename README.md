@@ -111,6 +111,7 @@ Run _foliant-md-linter_ from the project root with following commands and option
 
     - `--includes-map` – set the path to the includes map (default: false)
     - `--foliant-config` – set the configuration file is a foliant from which chapters (default: `./foliant.yml`)
+    - `--format` – set the format of the markdownlint-cli2 config file (default: `jsonc`, incompatible with `--project`, `--node-modules`, `--working-dir`)
 
 - `markdown` – check md files for errors with markdownlint
     - `-v`, `-s`, `-c`, `-d`, `-a`, `-l`, `-f`, `-m`, `--includes-map`, `--foliant-config`
@@ -122,6 +123,19 @@ Run _foliant-md-linter_ from the project root with following commands and option
     - `-v`, `-s`, `-p`, `-d`, `-m`
 
 `.markdownlintignore` – an exception file, each line of which can contain a glob.
+
+### Format `cjs`
+
+Using the `--format` argument on the CLI, you can set the configuration file format for `markdownlint-cli2`.
+If you select the `cjs` format, you will get a more automated version of the configuration file.
+You will not need to manually specify the parameters `working_dir`, `node_modules` and `project`.
+These arguments will be make automatically using the `path` and `git-repo-name` extensions.
+
+The configuration file will list all the files specified in the `chapters` and `includes_map` sections for use as "globs".
+
+To use the `lint all markdown files` function with the markdownlint extension for VS Code, a file will be added to the project folder `.vscode/settings.json`.
+Checking of all files will be disabled in this file, but the list of files that need to be checked will remain in the `cjs` file.
+So you can use the `lint all markdown files` function  in vs code, but it will check only those files that will be contained in chapters, and in includes_map.json
 
 ### Examples
 
