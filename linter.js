@@ -218,15 +218,15 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
     )
   }
 
+  // Working directory and node_modules
   if (nodeModules) {
     args.push(`--node-modules ${nodeModules}`)
   }
-
-  // Working directory and node_modules
   if (workinDir) {
     args.push(`--working-dir ${workinDir}`)
   }
 
+  // Format jsonc and cjs
   if (format) {
     args.push(`--format ${format}`)
   }
