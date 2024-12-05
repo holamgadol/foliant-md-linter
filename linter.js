@@ -189,6 +189,24 @@ function writeLog (logFile) {
   return (isWin === true) ? `>> ${logFile} 2>&1` : `2>&1 | tee ${logFile}`
 }
 
+function removeFinding (logFile) {
+  const regexFinding = /^(Finding: ).+/gm
+  try {
+    const text = readFileSync(logFile).toString('utf-8').split(/\r?\n/)
+    const lines = []
+    text.forEach((line) => {
+      if (!line.match(regexFinding)) {
+        lines.push(line)
+      } else {
+        console.log(line)
+      }
+    })
+    fs.writeFileSync(logFile, lines.join('\r\n'))
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig,
   nodeModules = '', workinDir = '', isFix = false, debug = false, format = '') {
@@ -315,6 +333,9 @@ function checkExitCode (allowfailure) {
 }
 
 function afterLint (verbose = false, clearConfig = false, allowFailure = false, debug = false, format = '') {
+  if (format === 'cjs') {
+    removeFinding(path.resolve(cwd, markdownLintLog))
+  }
   printLintResults(verbose)
   clearConfigFile(clearConfig, format)
   if (!debug) {

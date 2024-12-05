@@ -248,20 +248,16 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     const content = []
     json.globs = listOfFiles
     content.push('// @ts-check\n\n"use strict";\n\n')
-    if (json.config.validateIntLinksConf) {
+    if (json.config['validate-internal-links']) {
       content.push("const path = require('path')")
       content.push("const repoName = require('git-repo-name')")
     }
 
     content.push(`const json = ${JSON.stringify(json, null, 4)}`)
 
-    if (json.config.validateIntLinksConf) {
+    if (json.config['validate-internal-links']) {
       content.push('json.config[\'validate-internal-links\'].project = repoName.sync({cwd: __dirname})')
       content.push('json.config[\'validate-internal-links\'].workingDir = __dirname')
-    }
-    if (includesMap) {
-      const includesMapPath = path.relative('./', includesMap)
-      content.push(`json.config['validate-internal-links'].includesMap = "./${includesMapPath}"`)
     }
 
     content.push('\n\nmodule.exports = json')
@@ -282,7 +278,11 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
       const data = JSON.parse(fs.readFileSync('package.json'))
       data.dependencies['git-repo-name'] = '^1.0.1'
       data.dependencies['markdownlint-rules-foliant'] = 'latest'
-      fs.writeFileSync('package.json', JSON.stringify(data, null, 2))
+      try {
+        fs.writeFileSync('package.json', JSON.stringify(data, null, 2))
+      } catch (error) {
+        console.log(error)
+      }
     } else {
       // write package.json
       const packageJSONforCJS = {
