@@ -388,6 +388,7 @@ function createConfigIncludesMap (foliantConfig) {
   /* eslint-disable no-useless-escape */
   const onlyIncludesMapConf = `title: !include ${foliantConfig}#title
 chapters: !include ${foliantConfig}#chapters
+escape_code: !include ${foliantConfig}#escape_code
 preprocessors:
   - includes:
       includes_map:
