@@ -386,10 +386,15 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
 
 function createConfigIncludesMap (foliantConfig) {
   /* eslint-disable no-useless-escape */
-  const onlyIncludesMapConf = `title: !include ${foliantConfig}#title
-chapters: !include ${foliantConfig}#chapters
-escape_code: !include ${foliantConfig}#escape_code
-preprocessors:
+  const content = fs.readFileSync(foliantConfig)
+  const onlyIncludesMapConf = []
+  onlyIncludesMapConf.push(`title: !include ${foliantConfig}#title
+chapters: !include ${foliantConfig}#chapters`)
+  if (content.includes('escape_code:')) {
+    onlyIncludesMapConf.push(`escape_code: !include ${foliantConfig}#escape_code`)
+  }
+
+  onlyIncludesMapConf.push(`preprocessors:
   - includes:
       includes_map:
         - anchors
@@ -400,10 +405,9 @@ preprocessors:
         - pre
 backend_config:
   pre:
-    slug: temp_project
-`
+    slug: temp_project`)
   /* eslint-enable no-useless-escape */
-  fs.writeFileSync(usedFoliantConfig, onlyIncludesMapConf, (err) => {
+  fs.writeFileSync(usedFoliantConfig, onlyIncludesMapConf.join('\n'), (err) => {
     if (err) {
       console.error(err)
       return
