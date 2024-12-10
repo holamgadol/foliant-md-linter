@@ -86,12 +86,12 @@ if you haven't installed it yet:
 Run _foliant-md-linter_ from the project root with following commands and options:
 
 - `full-check` – check md files with markdownlint and markdown-link-check
-    - `-v`, `--verbose` – print full linting results (default: false)
+    - `-v`, `--verbose` – print full linting results (default: _false_)
     - `-s`, `--source <path-to-sources>` – specify source directory (default: _src_)
     - `-c`, `--config <path-to-sources>` – path to custom config
     - `-p`, `--project <project-name>` – specify project name
-    - `-d`, `--debug` – print executing command (default: false)
-    - `-a`, `--allowfailure` – allow exit with failure if errors (default: false)
+    - `-d`, `--debug` – print executing command (default: _false_)
+    - `-a`, `--allowfailure` – allow exit with failure if errors (default: _false_)
     - `--node-modules <node-modules-path>` – custom path to node modules (the command to get the path to the node modules `npm list -g | head -1`)
     - `-w --working-dir <working-dir>` – the working directory should be set if the project folder differs from the CWD. For example, when using the linter in vs code (the command to get the path to the working dir `pwd` in the foliant project folder)
 
@@ -108,12 +108,11 @@ Run _foliant-md-linter_ from the project root with following commands and option
         - `slim` (default value) – check for critical errors with markdownlint
         - `typograph` – fix typograph errors with markdownlint
         - `mdlint-default` – check md files for critical formatting errors with markdownlint and validate external links with markdown-link-check
-
-    - `--includes-map` – set the path to the includes map (default: false)
     - `--foliant-config` – set the configuration file is a foliant from which chapters (default: `./foliant.yml`)
+    - `--format` – set the format of the markdownlint-cli2 config file (default: `jsonc`, incompatible with `--project`, `--node-modules`, `--working-dir`)
 
 - `markdown` – check md files for errors with markdownlint
-    - `-v`, `-s`, `-c`, `-d`, `-a`, `-l`, `-f`, `-m`, `--includes-map`, `--foliant-config`
+    - `-v`, `-s`, `-c`, `-d`, `-a`, `-l`, `-f`, `-m`, `--foliant-config`
 - `urls` validate external links with markdown-link-check
     - `-v`, `-s`, `-d`, `-a`, `-l`
 - `print` print linting results
@@ -122,6 +121,19 @@ Run _foliant-md-linter_ from the project root with following commands and option
     - `-v`, `-s`, `-p`, `-d`, `-m`
 
 `.markdownlintignore` – an exception file, each line of which can contain a glob.
+
+### Format `cjs`
+
+Using the `--format` argument on the CLI, you can set the configuration file format for `markdownlint-cli2`.
+If you select the `cjs` format, you will get a more automated version of the configuration file.
+You will not need to manually specify the parameters `working_dir`, `node_modules` and `project`.
+These arguments will be make automatically using the `path` and `git-repo-name` extensions.
+
+The configuration file will list all the files specified in the `chapters` and `includes_map` sections for use as "globs".
+
+To use the `lint all markdown files` function with [the markdownlint extension for VS Code](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint), a file will be added to the project folder `.vscode/settings.json`.
+Checking of all files will be disabled in this file, but the list of files that need to be checked will remain in the `cjs` file.
+So you can use the `lint all markdown files` function  in VS Code, but it will check only those files that will be contained in chapters, and in includes_map.json
 
 ### Examples
 
