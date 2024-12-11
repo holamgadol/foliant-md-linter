@@ -34,7 +34,7 @@ const defaultConfig = path.resolve(cwd, '.markdownlint-cli2')
 const defaultSrc = 'src'
 const defaultFoliantConfig = path.resolve(cwd, 'foliant.yml')
 const defaultIncludesMap = './includes_map.json'
-const usedFoliantConfig = path.resolve(cwd, 'only_includes_map.yml')
+const usedFoliantConfig = path.resolve(cwd, 'only_includes.yml')
 
 // Options
 const verboseOption = new Option('-v, --verbose',
@@ -407,13 +407,13 @@ backend_config:
   pre:
     slug: temp_project`)
   /* eslint-enable no-useless-escape */
-  fs.writeFileSync(usedFoliantConfig, onlyIncludesMapConf.join('\n'), (err) => {
-    if (err) {
-      console.error(err)
-      return
-    }
+  try {
+    fs.writeFileSync(usedFoliantConfig, onlyIncludesMapConf.join('\n'))
     console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated`)
-  })
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
 }
 
 function rmIncludesMap (clearConfig = false) {
