@@ -389,7 +389,8 @@ function createConfigIncludesMap (foliantConfig) {
   const content = fs.readFileSync(foliantConfig)
   const onlyIncludesMapConf = []
   onlyIncludesMapConf.push(`title: !include ${foliantConfig}#title
-chapters: !include ${foliantConfig}#chapters`)
+chapters: !include ${foliantConfig}#chapters
+tmp_dir: __tempproj__`)
   if (content.includes('escape_code:')) {
     onlyIncludesMapConf.push(`escape_code: !include ${foliantConfig}#escape_code`)
   }
