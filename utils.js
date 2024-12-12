@@ -76,6 +76,9 @@ function eachRecursive (obj, list, sourceDir) {
       eachRecursive(obj[k], list, sourceDir)
     }
   }
+  if (fs.existsSync(`${sourceDir}/index.md`)) {
+    list.push(`${sourceDir}/index.md`)
+  }
 }
 
 // Export functions
