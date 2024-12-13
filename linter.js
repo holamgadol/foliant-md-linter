@@ -116,7 +116,7 @@ function printErrors (logFile) {
       }
     })
   } catch (err) {
-
+    console.log(err)
   }
 }
 
@@ -172,7 +172,9 @@ const printLintResults = function (verbose = false) {
     }
     console.log(`Full markdownlint log see in ${markdownlintLogPath}\n`)
     if (markdownlinkCheckErrorsCount !== null && markdownlinkCheckErrorsCount !== undefined) {
-      console.log(`\n${'='.repeat(80)}\n`)
+      if (verbose) {
+        console.log(`\n${'='.repeat(80)}\n`)
+      }
     }
   }
 
