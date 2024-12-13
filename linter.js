@@ -90,29 +90,40 @@ if (fs.existsSync(path.join(__dirname, '/node_modules/.bin/markdownlint-cli2')))
 }
 
 // Utils
-function printErrors (logFile) {
+function printErrorsFile (logFile) {
+  try {
+    const data = readFileSync(logFile)
+    const markdownlintMode = logFile.match(markdownLintLog)
+    printErrors(data, markdownlintMode)
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+function printErrors (data, mode) {
+  const linkCheckFile = /^FILE: (.*)$/
   let regex
   let file
   let fileTmp
   let fileLink
-  if (logFile.match(markdownLintLog)) {
+  if (mode) {
     regex = /^(?!Finding: |Linting: |Summary: |markdownlint-cli2| ).+/gm
   } else {
     regex = /^\s*\[✖].* Status:/gm
   }
-  const linkCheckFile = /^FILE: (.*)$/
+
   try {
-    const text = readFileSync(logFile).toString('utf-8').split(/\r?\n/)
-    text.forEach((line) => {
+    const lines = data.toString('utf-8').split(/\r?\n/)
+    lines.forEach((line) => {
       if (line.match(linkCheckFile)) {
         fileLink = line.match(linkCheckFile)[0]
       }
       if (line.match(regex)) {
         file = line.split(':')[0]
-        if (fileTmp !== file && logFile.match(markdownLintLog)) {
+        if (fileTmp !== file && mode) {
           fileTmp = file
           console.log(`\n${'-'.repeat(80)}\n\nFILE: ${fileTmp}\n`)
-        } else if (!logFile.match(markdownLintLog)) {
+        } else if (!mode) {
           console.log(`\n${'-'.repeat(80)}\n\n${fileLink}\n`)
         }
         console.log(`    ${line}`)
@@ -156,7 +167,12 @@ const printLintResults = function (verbose = false) {
   // Log numbers of files
   if (markdownFilesCount !== null && markdownFilesCount !== undefined) {
     // Header
-    console.log(`\n${'='.repeat(80)}\n${' '.repeat(37)}RESULTS\n${'='.repeat(80)}\n`)
+    if (verbose) {
+      console.log(`\n${'='.repeat(80)}\n${' '.repeat(37)}RESULTS\n${'='.repeat(80)}\n`)
+    } else {
+      console.log('\nResults:\n')
+    }
+
     console.log(`Checked ${markdownFilesCount} files\n`)
   }
 
@@ -173,7 +189,7 @@ const printLintResults = function (verbose = false) {
   if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
     console.log(`Found ${markdownLintErrorsCount} formatting errors`)
     if (verbose) {
-      printErrors(markdownlintLogPath)
+      printErrorsFile(markdownlintLogPath)
     }
     console.log(`Full markdownlint log see in ${markdownlintLogPath}\n`)
     if (markdownlinkCheckErrorsCount !== null && markdownlinkCheckErrorsCount !== undefined) {
@@ -187,7 +203,7 @@ const printLintResults = function (verbose = false) {
   if (markdownlinkCheckErrorsCount !== null && markdownlinkCheckErrorsCount !== undefined) {
     console.log(`Found ${markdownlinkCheckErrorsCount} broken external links`)
     if (verbose) {
-      printErrors(markdownlinkcheckLog)
+      printErrorsFile(markdownlinkcheckLog)
     }
     console.log(`Full markdown-link-check log see in ${markdownlinkcheckLog}\n`)
   }
@@ -302,7 +318,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   commands.markdownlinkcheck = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
 
   // Merge comands markdownlint and markdownlinkcheck
-  commands.lintSrcFull = `${commands.markdownlint} & ${commands.markdownlinkcheck}`
+  commands.lintSrcFull = `${commands.markdownlint} && ${commands.markdownlinkcheck}`
 
   return {
     commands
@@ -364,14 +380,48 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
   }
   const spawnCommand = spawn(command, { shell: shell })
 
+  const regexSkip = /^(\s*\[\/\])/gm
+  const regexBad = /\s*\[✖\] /gm
+  const regexStart = /^Linting: .*/gm
+  const regexFile = /^FILE: .*/gm
+
+  let lines = []
+  let split = false
+  let output = ''
+  let start = false
+
   spawnCommand.stdout.on('data', (data) => {
-    if (!verbose) {
-      const regex = /^(\s*\[\/\])/gm
-      if (!regexFinding.test(data) && !regex.test(data)) {
-        console.log(`${data}`)
-      }
-    } else {
+    if (verbose) {
       console.log(`${data}`)
+    } else {
+      if (regexStart.test(data)) {
+        start = true
+      }
+      if (start) {
+        if (!regexFinding.test(data) && !regexSkip.test(data)) {
+          if (regexFile.test(data)) {
+            output = lines.join('\n')
+            if (regexBad.test(output)) {
+              console.log(output)
+              lines = []
+              output = ''
+            }
+            split = true
+          }
+          if (split) {
+            if (!regexSkip.test(data)) {
+              lines.push(data.toString())
+            }
+          } else {
+            console.log(data.toString())
+          }
+        }
+        if (regexBad.test(lines.join('\n'))) {
+          console.log(lines.join('\n').replaceAll('\n\n', '\n'))
+          lines = []
+          output = ''
+        }
+      }
     }
   })
 
