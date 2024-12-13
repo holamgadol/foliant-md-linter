@@ -197,8 +197,6 @@ function removeFinding (logFile) {
     text.forEach((line) => {
       if (!line.match(regexFinding)) {
         lines.push(line)
-      } else {
-        console.log(line)
       }
     })
     fs.writeFileSync(logFile, lines.join('\r\n'))
