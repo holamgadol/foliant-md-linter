@@ -50,7 +50,7 @@ const updateListOfFiles = (sourceDir, IncludesMapPath, listOfFiles) => {
     listOfFiles = [...new Set(listOfFiles)]
     return listOfFiles
   } catch (error) {
-    console.log(error)
+    console.error(error)
     process.exit(1)
   }
 }

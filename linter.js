@@ -5,7 +5,7 @@ const {
   Command,
   Option
 } = require('commander')
-const { exec, spawn, execSync } = require('child_process')
+const { spawn, execSync } = require('child_process')
 const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
@@ -35,6 +35,9 @@ const defaultSrc = 'src'
 const defaultFoliantConfig = path.resolve(cwd, 'foliant.yml')
 const defaultIncludesMap = './includes_map.json'
 const usedFoliantConfig = path.resolve(cwd, 'only_includes.yml')
+
+// Regex
+const regexFinding = /^(Finding: ).+/gm
 
 // Options
 const verboseOption = new Option('-v, --verbose',
@@ -116,7 +119,7 @@ function printErrors (logFile) {
       }
     })
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 }
 
@@ -152,6 +155,8 @@ const printLintResults = function (verbose = false) {
 
   // Log numbers of files
   if (markdownFilesCount !== null && markdownFilesCount !== undefined) {
+    // Header
+    console.log(`\n${'='.repeat(80)}\n${' '.repeat(37)}RESULTS\n${'='.repeat(80)}\n`)
     console.log(`Checked ${markdownFilesCount} files\n`)
   }
 
@@ -164,9 +169,9 @@ const printLintResults = function (verbose = false) {
   const markdownlinkcheckLog = path.resolve(cwd, markdownLinkCheckLog)
   const markdownlinkCheckErrorsCount = numberFromLog(markdownlinkcheckLog, markdownLinkCheckErrors)
 
-  // Log
+  // Log markdownlint
   if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
-    console.log(`\nFound ${markdownLintErrorsCount} formatting errors`)
+    console.log(`Found ${markdownLintErrorsCount} formatting errors`)
     if (verbose) {
       printErrors(markdownlintLogPath)
     }
@@ -178,8 +183,9 @@ const printLintResults = function (verbose = false) {
     }
   }
 
+  // Log markdownlinkcheck
   if (markdownlinkCheckErrorsCount !== null && markdownlinkCheckErrorsCount !== undefined) {
-    console.log(`\nFound ${markdownlinkCheckErrorsCount} broken external links`)
+    console.log(`Found ${markdownlinkCheckErrorsCount} broken external links`)
     if (verbose) {
       printErrors(markdownlinkcheckLog)
     }
@@ -192,7 +198,6 @@ function writeLog (logFile) {
 }
 
 function removeFinding (logFile) {
-  const regexFinding = /^(Finding: ).+/gm
   try {
     const text = readFileSync(logFile).toString('utf-8').split(/\r?\n/)
     const lines = []
@@ -203,7 +208,7 @@ function removeFinding (logFile) {
     })
     fs.writeFileSync(logFile, lines.join('\r\n'))
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 
@@ -320,7 +325,7 @@ function clearConfigFile (clearConfig, format) {
     console.log(`removing ${defaultConfig}.${format} ...`)
     unlink(`${defaultConfig}.${format}`, (err) => {
       if (err && err.syscall === 'unlink') {
-        console.log(`${defaultConfig}.${format} is absent`)
+        console.error(`${defaultConfig}.${format} is absent`)
       }
     })
   }
@@ -357,31 +362,27 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
       `format: ${format}`
     )
   }
-  if (verbose === false) {
-    exec(command, { shell: shell }, (err, stdout, stderror) => {
-      if (err || stderror || stdout) {
-        afterLint(verbose, clearConfig, allowFailure, debug, format)
-      } else {
-        console.log('Command completed with no errors!')
+  const spawnCommand = spawn(command, { shell: shell })
+
+  spawnCommand.stdout.on('data', (data) => {
+    if (!verbose) {
+      const regex = /^(\s*\[\/\])/gm
+      if (!regexFinding.test(data) && !regex.test(data)) {
+        console.log(`${data}`)
       }
-    })
-  } else {
-    const spawnCommand = spawn(command, { shell: shell })
-
-    spawnCommand.stdout.on('data', (data) => {
+    } else {
       console.log(`${data}`)
-    })
+    }
+  })
 
-    spawnCommand.stderr.on('data', (data) => {
-      console.error(`${data}`)
-    })
+  spawnCommand.stderr.on('data', (data) => {
+    console.error(`${data}`)
+  })
 
-    spawnCommand.on('close', (code) => {
-      console.log(`child process exited with code ${code}`)
-      console.log(`\n${'='.repeat(80)}\n\n${' '.repeat(37)}RESULTS\n\n${'='.repeat(80)}\n`)
-      afterLint(verbose, clearConfig, allowFailure, debug, format)
-    })
-  }
+  spawnCommand.on('close', (code) => {
+    console.log(`child process exited with code ${code}`)
+    afterLint(verbose, clearConfig, allowFailure, debug, format)
+  })
 }
 
 function createConfigIncludesMap (foliantConfig) {
@@ -412,7 +413,7 @@ backend_config:
     fs.writeFileSync(usedFoliantConfig, onlyIncludesMapConf.join('\n'))
     console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated`)
   } catch (error) {
-    console.log(error)
+    console.error(error)
     process.exit(1)
   }
 }

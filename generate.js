@@ -265,7 +265,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     try {
       fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.cjs'), content.join('\n'), { mode: 0o777 })
     } catch (error) {
-      console.log(error)
+      console.error(error)
       process.exit(1)
     }
     console.log(`${mode} markdownlint config '.markdownlint-cli2.cjs' created successfully!`)
@@ -281,7 +281,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
       try {
         fs.writeFileSync('package.json', JSON.stringify(data, null, 2))
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     } else {
       // write package.json
@@ -314,7 +314,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     try {
       fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), content, { mode: 0o777 })
     } catch (error) {
-      console.log(error)
+      console.error(error)
       process.exit(1)
     }
     console.log(`${mode} markdownlint config '.markdownlint-cli2.jsonc' created successfully!`)
@@ -337,7 +337,7 @@ function initVSCodeSettings (listOfFiles = []) {
   try {
     fs.writeFileSync(vscodeSettings, JSON.stringify(data))
   } catch (error) {
-    console.log(error)
+    console.error(error)
     process.exit(1)
   }
 
