@@ -10,6 +10,7 @@ const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
 const { unlink } = require('fs')
+const Spinner = require('cli-spinner').Spinner
 
 // Import utils.js
 const {
@@ -23,6 +24,12 @@ const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
 const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
+
+// Spinner
+
+const spinner = new Spinner('processing.. %s')
+spinner.setSpinnerString('|/-\\')
+spinner.setSpinnerDelay(3)
 
 // The log paths
 const markdownLintLog = '.markdownlint.log'
@@ -380,57 +387,86 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
   }
   const spawnCommand = spawn(command, { shell: shell })
 
-  const regexSkip = /^(\s*\[\/\])/gm
-  const regexBad = /\s*\[✖\] /gm
+  const regexBad = /\[✖\] /gm
   const regexStart = /^Linting: .*/gm
-  const regexFile = /^FILE: .*/gm
+  const regexFile = /FILE:/gm
+  const regexError = /ERROR:/gm
 
-  let lines = []
-  let split = false
-  let output = ''
   let start = false
+  let linkcheck = false
+  let filename = ''
+  let ver = false
+  let results = ''
 
+  spinner.start()
   spawnCommand.stdout.on('data', (data) => {
-    if (verbose) {
-      console.log(`${data}`)
-    } else {
-      if (regexStart.test(data)) {
-        start = true
-      }
-      if (start) {
-        if (!regexFinding.test(data) && !regexSkip.test(data)) {
-          if (regexFile.test(data)) {
-            output = lines.join('\n')
-            if (regexBad.test(output)) {
-              console.log(output)
-              lines = []
-              output = ''
-            }
-            split = true
-          }
-          if (split) {
-            if (!regexSkip.test(data)) {
-              lines.push(data.toString())
-            }
-          } else {
-            console.log(data.toString())
-          }
+    const s = data.toString()
+    if (s.length > 0) {
+      if (verbose) {
+        spinner.stop(true)
+        console.log(s)
+        spinner.start()
+      } else {
+        if (s.match(regexStart) || s.match(regexFile)) {
+          start = true
         }
-        if (regexBad.test(lines.join('\n'))) {
-          console.log(lines.join('\n').replaceAll('\n\n', '\n'))
-          lines = []
-          output = ''
+        if (start) {
+          if (!s.match(regexFinding)) {
+            if (s.match(regexFile)) {
+              linkcheck = true
+            }
+            if (linkcheck) {
+              if (s.match(regexFile)) {
+                printLincheckReport(`${results}\n`)
+                results = ''
+                filename = s
+              }
+              if (filename) {
+                results += s
+              }
+            } else {
+              spinner.stop(true)
+              console.log(data.toString())
+              spinner.start()
+            }
+          }
         }
       }
     }
   })
 
+  function printLincheckReport (result) {
+    if (result.match(regexBad)) {
+      const arr = result.replace(/^\s+|\s+$/g, '').split('\n')
+      for (const l in arr) {
+        const str = arr[l]
+        if (str.match(regexError)) {
+          ver = true
+        }
+        if (ver && str.match(regexBad)) {
+          spinner.stop(true)
+          if (filename) {
+            console.log(`${filename.replace(/^\s+|\s+$/g, '')}`)
+            filename = ''
+            ver = false
+          }
+          console.log(`    ${str.replace(/^\s+|\s+$/g, '')}\n`)
+          filename = ''
+          spinner.start()
+        }
+      }
+    }
+  }
+
   spawnCommand.stderr.on('data', (data) => {
+    spinner.stop(true)
     console.error(`${data}`)
   })
 
   spawnCommand.on('close', (code) => {
-    console.log(`child process exited with code ${code}`)
+    printLincheckReport(results)
+    spinner.stop(true)
+    console.log(`\nchild process exited with code ${code}`)
     afterLint(verbose, clearConfig, allowFailure, debug, format)
   })
 }
