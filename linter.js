@@ -5,12 +5,13 @@ const {
   Command,
   Option
 } = require('commander')
-const { spawn, execSync } = require('child_process')
+const { spawn, spawnSync } = require('child_process')
 const path = require('path')
 const { readFileSync } = require('fs')
 const fs = require('fs')
 const { unlink } = require('fs')
 const Spinner = require('cli-spinner').Spinner
+const clc = require('cli-color')
 
 // Import utils.js
 const {
@@ -27,9 +28,16 @@ const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
 
 // Spinner
 
-const spinner = new Spinner('processing.. %s')
-spinner.setSpinnerString('|/-\\')
-spinner.setSpinnerDelay(3)
+const spinnerDelay = 200
+const spinnerString = ' |/-\\'
+
+const spinnerPrepare = new Spinner('prepare includes map...%s')
+spinnerPrepare.setSpinnerString(spinnerString)
+spinnerPrepare.setSpinnerDelay(spinnerDelay)
+
+const spinnerLint = new Spinner('checking...%s')
+spinnerLint.setSpinnerString(spinnerString)
+spinnerLint.setSpinnerDelay(spinnerDelay)
 
 // The log paths
 const markdownLintLog = '.markdownlint.log'
@@ -177,7 +185,7 @@ const printLintResults = function (verbose = false) {
     if (verbose) {
       console.log(`\n${'='.repeat(80)}\n${' '.repeat(37)}RESULTS\n${'='.repeat(80)}\n`)
     } else {
-      console.log('\nResults:\n')
+      console.log('\nResults:')
     }
 
     console.log(`Checked ${markdownFilesCount} files\n`)
@@ -286,7 +294,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
 
   // Create includes map
   if (existIncludesMap) {
-    generateIncludesMap(foliantConfig)
+    generateIncludesMap(foliantConfig, debug)
     updateListOfFiles(src, defaultIncludesMap, listOfFiles)
     args.push(`--includes-map ${defaultIncludesMap}`)
   }
@@ -332,15 +340,19 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   }
 }
 
-function generateIncludesMap (foliantConfig) {
-  createConfigIncludesMap(foliantConfig)
+function generateIncludesMap (foliantConfig, debug) {
+  createConfigIncludesMap(foliantConfig, debug)
   const genIncludesMapCommand = `foliant make --config ${usedFoliantConfig} pre --logs .temp_project_logs ${writeLog(genIncludesMapLog)} && rm -rf temp_project.pre/ && rm -rf .temp_project_logs/`
 
-  execSync(genIncludesMapCommand, { shell: shell }, (err) => {
-    if (err) {
-      console.error(err)
-    }
-  })
+  spinnerPrepare.start()
+  const result = spawnSync(genIncludesMapCommand, { shell: shell })
+  if (result.error) {
+    spinnerPrepare.stop(true)
+    console.error('Error generation includes map:', result.error)
+  } else {
+    spinnerPrepare.stop(true)
+    console.log(`Subprocess "Foliant" exited with code ${result.status}`)
+  }
 }
 
 function clearConfigFile (clearConfig, format) {
@@ -385,34 +397,87 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
       `format: ${format}`
     )
   }
-  const spawnCommand = spawn(command, { shell: shell })
 
+  const spawnCommand = spawn(command, { shell: shell })
   const regexBad = /\[✖\] /gm
-  const regexStart = /^Linting: .*/gm
   const regexFile = /FILE:/gm
   const regexError = /ERROR:/gm
+  const regexText = /^(Finding: |Linting: |Summary: |markdownlint-cli2)/gm
+  const regexFormatError = /^.+:\d+/gm
 
   let start = false
   let linkcheck = false
   let filename = ''
   let ver = false
   let results = ''
+  let markdownlintResults = []
+  let counterError = 0
 
-  spinner.start()
+  function printLincheckReport (result) {
+    if (result.match(regexBad)) {
+      const arr = result.replace(/^\s+|\s+$/g, '').split('\n')
+      for (const l in arr) {
+        const str = arr[l]
+        if (str.match(regexError)) {
+          ver = true
+        }
+        if (ver && str.match(regexBad)) {
+          spinnerLint.stop(true)
+          if (filename) {
+            counterError += 1
+            console.log(`${clc.red('✖')} ${counterError}. ${filename.replace(/^\s+|\s+$/g, '').substring(6)}`)
+            filename = ''
+            ver = false
+          }
+          console.log(`    ${str.replace(/^\s+|\s+$/g, '').substring(4)}`)
+          filename = ''
+          spinnerLint.start()
+        }
+      }
+    }
+  }
+
+  function printMarkdownReport (markdownlintResults, counterError) {
+    const arr = markdownlintResults.join('').split('\n')
+    for (const i in arr) {
+      const str = arr[i].replace(/^\s+|\s+$/g, '')
+      if (str.length > 0 && str.match(regexFormatError)) {
+        const strSplit = str.split(' ')
+        counterError += 1
+        console.log(`${clc.red('✖')} ${counterError}. ${strSplit[0]}\n    ${strSplit.slice(1).join(' ')}`)
+      }
+    }
+    return counterError
+  }
+
+  spinnerLint.start()
   spawnCommand.stdout.on('data', (data) => {
     const s = data.toString()
     if (s.length > 0) {
       if (verbose) {
-        spinner.stop(true)
+        spinnerLint.stop(true)
         console.log(s)
-        spinner.start()
       } else {
-        if (s.match(regexStart) || s.match(regexFile)) {
+        if (s.match(regexFinding)) {
+          if (!start) {
+            spinnerLint.stop(true)
+            console.log('Checking markdown:')
+            spinnerLint.start()
+          }
           start = true
         }
         if (start) {
-          if (!s.match(regexFinding)) {
+          if (!s.match(regexText)) {
             if (s.match(regexFile)) {
+              if (!linkcheck) {
+                spinnerLint.stop(true)
+                if (markdownlintResults.length > 0) {
+                  counterError = printMarkdownReport(markdownlintResults, counterError)
+                  markdownlintResults = []
+                }
+                console.log('\nChecking external links:')
+                spinnerLint.start()
+              }
               linkcheck = true
             }
             if (linkcheck) {
@@ -425,9 +490,13 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
                 results += s
               }
             } else {
-              spinner.stop(true)
-              console.log(data.toString())
-              spinner.start()
+              spinnerLint.stop(true)
+              markdownlintResults.push(s)
+              if (markdownlintResults.length > 20) {
+                counterError = printMarkdownReport(markdownlintResults, counterError)
+                markdownlintResults = []
+              }
+              spinnerLint.start()
             }
           }
         }
@@ -435,43 +504,27 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
     }
   })
 
-  function printLincheckReport (result) {
-    if (result.match(regexBad)) {
-      const arr = result.replace(/^\s+|\s+$/g, '').split('\n')
-      for (const l in arr) {
-        const str = arr[l]
-        if (str.match(regexError)) {
-          ver = true
-        }
-        if (ver && str.match(regexBad)) {
-          spinner.stop(true)
-          if (filename) {
-            console.log(`${filename.replace(/^\s+|\s+$/g, '')}`)
-            filename = ''
-            ver = false
-          }
-          console.log(`    ${str.replace(/^\s+|\s+$/g, '')}\n`)
-          filename = ''
-          spinner.start()
-        }
-      }
-    }
-  }
-
   spawnCommand.stderr.on('data', (data) => {
-    spinner.stop(true)
+    spinnerLint.stop(true)
     console.error(`${data}`)
   })
 
   spawnCommand.on('close', (code) => {
+    if (markdownlintResults.length > 0) {
+      counterError = printMarkdownReport(markdownlintResults, counterError)
+      markdownlintResults = []
+    }
     printLincheckReport(results)
-    spinner.stop(true)
-    console.log(`\nchild process exited with code ${code}`)
+    spinnerLint.stop(true)
+    if (verbose) {
+      console.log(`Subprocess "Linter" exited with code ${code}`)
+    }
+
     afterLint(verbose, clearConfig, allowFailure, debug, format)
   })
 }
 
-function createConfigIncludesMap (foliantConfig) {
+function createConfigIncludesMap (foliantConfig, debug) {
   /* eslint-disable no-useless-escape */
   const content = fs.readFileSync(foliantConfig)
   const onlyIncludesMapConf = []
@@ -497,7 +550,9 @@ backend_config:
   /* eslint-enable no-useless-escape */
   try {
     fs.writeFileSync(usedFoliantConfig, onlyIncludesMapConf.join('\n'))
-    console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated`)
+    if (debug) {
+      console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated`)
+    }
   } catch (error) {
     console.error(error)
     process.exit(1)
