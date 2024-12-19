@@ -408,33 +408,32 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
   let start = false
   let linkcheck = false
   let filename = ''
-  let ver = false
   let results = ''
   let markdownlintResults = []
   let counterError = 0
 
-  function printLincheckReport (result) {
+  function printLincheckReport (result, filename) {
+    const l = []
     if (result.match(regexBad)) {
       const arr = result.replace(/^\s+|\s+$/g, '').split('\n')
-      for (const l in arr) {
-        const str = arr[l]
+      let ver = false
+      for (const i in arr) {
+        const str = arr[i]
         if (str.match(regexError)) {
           ver = true
         }
         if (ver && str.match(regexBad)) {
-          spinnerLint.stop(true)
           if (filename) {
             counterError += 1
-            console.log(`${clc.red('✖')} ${counterError}. ${filename.replace(/^\s+|\s+$/g, '').substring(6)}`)
-            filename = ''
-            ver = false
+            l.push(`${clc.red('✖')} ${counterError}. ${filename.replace(/^\s+|\s+$/g, '').substring(6)}`)
           }
-          console.log(`    ${str.replace(/^\s+|\s+$/g, '').substring(4)}`)
-          filename = ''
-          spinnerLint.start()
+          l.push(`    ${str.replace(/^\s+|\s+$/g, '').substring(4)}`)
         }
       }
     }
+    spinnerLint.stop(true)
+    console.log(l.join('\n'))
+    spinnerLint.start()
   }
 
   function printMarkdownReport (markdownlintResults, counterError) {
@@ -482,7 +481,9 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
             }
             if (linkcheck) {
               if (s.match(regexFile)) {
-                printLincheckReport(`${results}\n`)
+                if (results.length > 0) {
+                  printLincheckReport(`${results}\n`, filename)
+                }
                 results = ''
                 filename = s
               }
@@ -514,7 +515,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
       counterError = printMarkdownReport(markdownlintResults, counterError)
       markdownlintResults = []
     }
-    printLincheckReport(results)
+    printLincheckReport(`${results}\n`, filename)
     spinnerLint.stop(true)
     if (verbose) {
       console.log(`Subprocess "Linter" exited with code ${code}`)
