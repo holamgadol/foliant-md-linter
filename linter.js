@@ -175,6 +175,7 @@ function numberFromLog (logFile, regex, counterror = true) {
 
 const printLintResults = function (verbose = false) {
   const markdownlintLogPath = path.resolve(cwd, markdownLintLog)
+  const markdownlintLogRelPath = path.relative(cwd, markdownlintLogPath)
   const markdownFiles = /Linting: (\d+) file/g
   const files = fs.readdirSync(__dirname).filter(fn => fn.match(markdownLintLog))
   const markdownFilesCount = numberFromLog(files[0], markdownFiles, false)
@@ -197,8 +198,9 @@ const printLintResults = function (verbose = false) {
 
   // Markdown Link Check
   const markdownLinkCheckErrors = /ERROR: (\d+) dead links found!/g
-  const markdownlinkcheckLog = path.resolve(cwd, markdownLinkCheckLog)
-  const markdownlinkCheckErrorsCount = numberFromLog(markdownlinkcheckLog, markdownLinkCheckErrors)
+  const markdownlinkcheckLogPath = path.resolve(cwd, markdownLinkCheckLog)
+  const markdownlinkcheckLogRelPath = path.relative(cwd, markdownlinkcheckLogPath)
+  const markdownlinkCheckErrorsCount = numberFromLog(markdownlinkcheckLogPath, markdownLinkCheckErrors)
 
   // Log markdownlint
   if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
@@ -206,7 +208,7 @@ const printLintResults = function (verbose = false) {
     if (verbose) {
       printErrorsFile(markdownlintLogPath)
     }
-    console.log(`Full markdownlint log see in ${markdownlintLogPath}\n`)
+    console.log(`Full markdownlint log see in ${markdownlintLogRelPath}\n`)
     if (markdownlinkCheckErrorsCount !== null && markdownlinkCheckErrorsCount !== undefined) {
       if (verbose) {
         console.log(`\n${'='.repeat(80)}\n`)
@@ -218,9 +220,9 @@ const printLintResults = function (verbose = false) {
   if (markdownlinkCheckErrorsCount !== null && markdownlinkCheckErrorsCount !== undefined) {
     console.log(`Found ${markdownlinkCheckErrorsCount} broken external links`)
     if (verbose) {
-      printErrorsFile(markdownlinkcheckLog)
+      printErrorsFile(markdownlinkcheckLogPath)
     }
-    console.log(`Full markdown-link-check log see in ${markdownlinkcheckLog}\n`)
+    console.log(`Full markdown-link-check log see in ${markdownlinkcheckLogRelPath}\n`)
   }
 }
 
@@ -351,7 +353,9 @@ function generateIncludesMap (foliantConfig, debug) {
     console.error('Error generation includes map:', result.error)
   } else {
     spinnerPrepare.stop(true)
-    console.log(`Subprocess "Foliant" exited with code ${result.status}`)
+    if (debug) {
+      console.log(`Subprocess "Foliant" exited with code ${result.status}`)
+    }
   }
 }
 
@@ -431,9 +435,11 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
         }
       }
     }
-    spinnerLint.stop(true)
-    console.log(l.join('\n'))
-    spinnerLint.start()
+    if (l.length > 0) {
+      spinnerLint.stop(true)
+      console.log(l.join('\n'))
+      spinnerLint.start()
+    }
   }
 
   function printMarkdownReport (markdownlintResults, counterError) {
