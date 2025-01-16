@@ -288,7 +288,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   }
 
   // Get list of files and creat includes map
-  if (fs.existsSync(foliantConfig)) {
+  if (fs.existsSync(foliantConfig) && format === 'cjs') {
     listOfFiles = parseChapters(foliantConfig, src, listOfFiles)
     existIncludesMap = existIncludes(foliantConfig)
     args.push(`--foliant-config ${foliantConfig}`)
