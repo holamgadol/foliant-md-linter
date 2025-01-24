@@ -12,6 +12,7 @@ const fs = require('fs')
 const { unlink } = require('fs')
 const Spinner = require('cli-spinner').Spinner
 const clc = require('cli-color')
+const os = require('os')
 
 // Import utils.js
 const {
@@ -25,6 +26,7 @@ const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
 const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
+const logicalProcessorCount = os.cpus().length - 2
 
 // Spinner
 
@@ -204,7 +206,7 @@ const printLintResults = function (verbose = false) {
 
   // Log markdownlint
   if (markdownLintErrorsCount !== null && markdownLintErrorsCount !== undefined) {
-    console.log(`Found ${markdownLintErrorsCount} formatting errors`)
+    console.log(`\nFound ${markdownLintErrorsCount} formatting errors`)
     if (verbose) {
       printErrorsFile(markdownlintLogPath)
     }
@@ -329,7 +331,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} ${filesArgMdLint} ${writeLog(markdownLintLog)}`
 
   // Markdownlintcheck
-  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLinkCheck} -type f -name '*.md' -print0 | xargs -0 -n1 ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLinkCheck} -type f -name '*.md' -print0 | xargs -0 -n1 -P${logicalProcessorCount} ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${filesArgMdLinkCheck} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
 
   commands.markdownlinkcheck = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
@@ -415,8 +417,10 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
   let results = ''
   let markdownlintResults = []
   let counterError = 0
+  let markdownlintSuccessful = true
+  let LinkcheckSuccessful = true
 
-  function printLincheckReport (result, filename) {
+  function printLinkcheckReport (result, filename) {
     const l = []
     if (result.match(regexBad)) {
       const arr = result.replace(/^\s+|\s+$/g, '').split('\n')
@@ -430,6 +434,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
           if (filename) {
             counterError += 1
             l.push(`${clc.red('✖')} ${counterError}. ${filename.replace(/^\s+|\s+$/g, '').substring(6)}`)
+            LinkcheckSuccessful = false
           }
           l.push(`    ${str.replace(/^\s+|\s+$/g, '').substring(4)}`)
         }
@@ -450,6 +455,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
         const strSplit = str.split(' ')
         counterError += 1
         console.log(`${clc.red('✖')} ${counterError}. ${strSplit[0]}\n    ${strSplit.slice(1).join(' ')}`)
+        markdownlintSuccessful = false
       }
     }
     return counterError
@@ -466,7 +472,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
         if (s.match(regexFinding)) {
           if (!start) {
             spinnerLint.stop(true)
-            console.log('Checking markdown:')
+            console.log('Checking markdownlint:')
             spinnerLint.start()
           }
           start = true
@@ -480,6 +486,9 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
                   counterError = printMarkdownReport(markdownlintResults, counterError)
                   markdownlintResults = []
                 }
+                if (markdownlintSuccessful && markdownlintResults.length === 0) {
+                  console.log(`${clc.green('✅')} The markdownlint check was successful!`)
+                }
                 console.log('\nChecking external links:')
                 spinnerLint.start()
               }
@@ -488,7 +497,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
             if (linkcheck) {
               if (s.match(regexFile)) {
                 if (results.length > 0) {
-                  printLincheckReport(`${results}\n`, filename)
+                  printLinkcheckReport(`${results}\n`, filename)
                 }
                 results = ''
                 filename = s
@@ -521,8 +530,14 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
       counterError = printMarkdownReport(markdownlintResults, counterError)
       markdownlintResults = []
     }
-    printLincheckReport(`${results}\n`, filename)
+    if (results.length > 0) {
+      printLinkcheckReport(`${results}\n`, filename)
+    }
     spinnerLint.stop(true)
+    if (LinkcheckSuccessful) {
+      console.log(`${clc.green('✅')} The external links check was successful!`)
+    }
+
     if (verbose) {
       console.log(`Subprocess "Linter" exited with code ${code}`)
     }
@@ -558,7 +573,7 @@ backend_config:
   try {
     fs.writeFileSync(usedFoliantConfig, onlyIncludesMapConf.join('\n'))
     if (debug) {
-      console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated`)
+      console.log(`The foliant configuration file ${usedFoliantConfig} for creating the includes map has been successfully generated\n`)
     }
   } catch (error) {
     console.error(error)
