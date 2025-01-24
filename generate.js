@@ -50,7 +50,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     ]
   }
 
-  if (fs.existsSync(foliantConfig)) {
+  if (fs.existsSync(foliantConfig) && format === 'cjs') {
     listOfFiles = parseChapters(foliantConfig, source, listOfFiles)
     existIncludesMap = existIncludes(foliantConfig)
     if (existIncludesMap) {

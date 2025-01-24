@@ -26,7 +26,10 @@ const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
 const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
-const logicalProcessorCount = os.cpus().length - 2
+let logicalProcessorCount = 1
+if (os.cpus().length > 2) {
+  logicalProcessorCount = os.cpus().length - 2
+}
 
 // Spinner
 
@@ -297,7 +300,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   }
 
   // Create includes map
-  if (existIncludesMap) {
+  if (existIncludesMap && format === 'cjs') {
     generateIncludesMap(foliantConfig, debug)
     updateListOfFiles(src, defaultIncludesMap, listOfFiles)
     args.push(`--includes-map ${defaultIncludesMap}`)
@@ -462,6 +465,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
   }
 
   spinnerLint.start()
+
   spawnCommand.stdout.on('data', (data) => {
     const s = data.toString()
     if (s.length > 0) {
@@ -534,7 +538,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
       printLinkcheckReport(`${results}\n`, filename)
     }
     spinnerLint.stop(true)
-    if (LinkcheckSuccessful) {
+    if (LinkcheckSuccessful && code === 0) {
       console.log(`${clc.green('✅')} The external links check was successful!`)
     }
 
