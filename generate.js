@@ -30,25 +30,14 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
   validateIntLinksConf.includesMap = includesMap || undefined
   validateIntLinksConf.workingDir = workingDir || undefined
 
-  let customRules = [
-    './node_modules/markdownlint-rules-foliant/lib/indented-fence',
-    './node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label',
-    './node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote',
-    './node_modules/markdownlint-rules-foliant/lib/typograph',
-    './node_modules/markdownlint-rules-foliant/lib/validate-internal-links',
-    './node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist'
+  const customRules = [
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/indented-fence'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
   ]
-
-  if (nodeModulePath.length !== 0) {
-    customRules = [
-      path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/indented-fence'),
-      path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
-      path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
-      path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
-      path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
-      path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
-    ]
-  }
 
   if (fs.existsSync(foliantConfig) && format === 'cjs') {
     listOfFiles = parseChapters(foliantConfig, source, listOfFiles)
@@ -342,6 +331,14 @@ function initVSCodeSettings (listOfFiles = []) {
   }
 
   return configExist
+}
+
+function defPath (nodeModulePath, relPath) {
+  if (nodeModulePath.length !== 0) {
+    return path.join(nodeModulePath, relPath)
+  } else {
+    return '.' + relPath
+  }
 }
 
 program
