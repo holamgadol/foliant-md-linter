@@ -43,12 +43,16 @@ const getFoliantConfig = (foliantConfig) => {
 
 const updateListOfFiles = (sourceDir, IncludesMapPath, listOfFiles) => {
   // Get files from includes map
-  const includesMapContent = JSON.parse(fs.readFileSync(IncludesMapPath, 'utf8'))
-  eachRecursive(includesMapContent, listOfFiles, sourceDir)
-
-  // Remove duplicates
-  listOfFiles = [...new Set(listOfFiles)]
-  return listOfFiles
+  try {
+    const includesMapContent = JSON.parse(fs.readFileSync(IncludesMapPath, 'utf8'))
+    eachRecursive(includesMapContent, listOfFiles, sourceDir)
+    // Remove duplicates
+    listOfFiles = [...new Set(listOfFiles)]
+    return listOfFiles
+  } catch (error) {
+    console.error(error)
+    process.exit(1)
+  }
 }
 
 function eachRecursive (obj, list, sourceDir) {
@@ -71,6 +75,9 @@ function eachRecursive (obj, list, sourceDir) {
     } else {
       eachRecursive(obj[k], list, sourceDir)
     }
+  }
+  if (fs.existsSync(`${sourceDir}/index.md`)) {
+    list.push(`${sourceDir}/index.md`)
   }
 }
 

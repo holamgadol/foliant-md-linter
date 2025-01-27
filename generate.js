@@ -4,6 +4,8 @@
 const { Command } = require('commander')
 const path = require('path')
 const fs = require('fs')
+const childProcess = require('child_process')
+
 const program = new Command()
 const cwd = process.cwd().toString()
 const vscodeSettings = '.vscode/settings.json'
@@ -17,9 +19,10 @@ const {
 
 function createConfig (mode = 'full', source = '', project = '', configPath = '',
   includesMap = '', nodeModulePath = '', workingDir = '', foliantConfig = '',
-  vscode = false, debug = false) {
+  debug = false, format = '') {
   let existIncludesMap = false
   let listOfFiles = []
+
   // Set validate-internal-links config
   const validateIntLinksConf = {}
   validateIntLinksConf.src = source || undefined
@@ -27,26 +30,23 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
   validateIntLinksConf.includesMap = includesMap || undefined
   validateIntLinksConf.workingDir = workingDir || undefined
 
-  if (nodeModulePath.length === 0) {
-    nodeModulePath = __dirname
-  }
   const customRules = [
-    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/indented-fence'),
-    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
-    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
-    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
-    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
-    path.join(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/indented-fence'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/non-literal-fence-label'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
   ]
 
-  if (fs.existsSync(foliantConfig)) {
+  if (fs.existsSync(foliantConfig) && format === 'cjs') {
     listOfFiles = parseChapters(foliantConfig, source, listOfFiles)
     existIncludesMap = existIncludes(foliantConfig)
     if (existIncludesMap) {
       updateListOfFiles(source, includesMap, listOfFiles)
     }
   }
-  console.log(listOfFiles)
+
   const configFull = {
     MD001: true,
     MD004: { style: 'dash' },
@@ -216,11 +216,11 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     try {
       const customConfig = JSON.parse(fs.readFileSync(path.resolve(cwd, configPath), 'utf-8'))
       config = Object.assign({}, config, customConfig)
-    } catch (err) {
-      if (err instanceof SyntaxError) {
+    } catch (error) {
+      if (error instanceof SyntaxError) {
         console.error('Invalid JSON format')
       } else {
-        console.error(err)
+        console.error(error)
       }
       mode = 'slim'
       config = configSlim
@@ -231,17 +231,82 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     console.log(config)
   }
 
-  const json = JSON.stringify({ customRules, config }, null, 4)
-  fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), json, { mode: 0o777 })
-  console.log(`${mode} markdownlint config created successfully!`)
+  const json = { customRules, config }
+  let configExist = false
+  if (format === 'cjs') {
+    const content = []
+    json.globs = listOfFiles
+    content.push('// @ts-check\n\n"use strict";\n\n')
+    if (json.config['validate-internal-links']) {
+      content.push("const path = require('path')")
+      content.push("const repoName = require('git-repo-name')")
+    }
 
-  if (listOfFiles && vscode) {
-    const configExist = initVSCodeSettings(listOfFiles)
+    content.push(`const json = ${JSON.stringify(json, null, 4)}`)
+
+    if (json.config['validate-internal-links']) {
+      content.push('json.config[\'validate-internal-links\'].project = repoName.sync({cwd: __dirname})')
+      content.push('json.config[\'validate-internal-links\'].workingDir = __dirname')
+    }
+
+    content.push('\n\nmodule.exports = json')
+
+    try {
+      fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.cjs'), content.join('\n'), { mode: 0o777 })
+    } catch (error) {
+      console.error(error)
+      process.exit(1)
+    }
+    console.log(`${mode} markdownlint config '.markdownlint-cli2.cjs' created successfully!`)
+
+    // disabling globs used by the markdownlint extension
+    configExist = initVSCodeSettings([])
+
+    const existPackageJSON = fs.existsSync('package.json')
+    if (existPackageJSON) {
+      const data = JSON.parse(fs.readFileSync('package.json'))
+      data.dependencies['git-repo-name'] = '^1.0.1'
+      data.dependencies['markdownlint-rules-foliant'] = 'latest'
+      try {
+        fs.writeFileSync('package.json', JSON.stringify(data, null, 2))
+      } catch (error) {
+        console.error(error)
+      }
+    } else {
+      // write package.json
+      const packageJSONforCJS = {
+        dependencies: {
+          'markdownlint-rules-foliant': 'latest',
+          'git-repo-name': '^1.0.1'
+        }
+      }
+      fs.writeFileSync(path.resolve(cwd, 'package.json'), JSON.stringify(packageJSONforCJS, null, 2), { mode: 0o777 })
+    }
+
+    // install dependencies
+    childProcess.execSync('npm i .', { stdio: [0, 1, 2] })
+
+    if (!existPackageJSON) {
+      // remove package.json
+      fs.rmSync(path.resolve(cwd, 'package.json'))
+      fs.rmSync(path.resolve(cwd, 'package-lock.json'))
+    }
+
     if (configExist) {
       console.log(`${vscodeSettings} config updated successfully!`)
     } else {
       console.log(`${vscodeSettings} config created successfully!`)
     }
+  } else {
+    const content = JSON.stringify({ customRules, config }, null, 4)
+
+    try {
+      fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), content, { mode: 0o777 })
+    } catch (error) {
+      console.error(error)
+      process.exit(1)
+    }
+    console.log(`${mode} markdownlint config '.markdownlint-cli2.jsonc' created successfully!`)
   }
 }
 
@@ -254,17 +319,31 @@ function initVSCodeSettings (listOfFiles = []) {
   if (configExist) {
     const originalData = JSON.parse(fs.readFileSync(vscodeSettings))
     data = Object.assign({}, originalData, data)
-    console.log(data)
   } else {
     fs.mkdirSync(path.dirname(vscodeSettings), { recursive: true })
   }
-  fs.writeFileSync(vscodeSettings, JSON.stringify(data))
+
+  try {
+    fs.writeFileSync(vscodeSettings, JSON.stringify(data))
+  } catch (error) {
+    console.error(error)
+    process.exit(1)
+  }
+
   return configExist
+}
+
+function defPath (nodeModulePath, relPath) {
+  if (nodeModulePath.length !== 0) {
+    return path.join(nodeModulePath, relPath)
+  } else {
+    return '.' + relPath
+  }
 }
 
 program
   .name('create-markdownlint-config')
-  .description('script for generating .markdownlint-cli2.jsonc in foliant-project root')
+  .description('script for generating markdownlint-cli2 config in foliant-project root')
   .version('0.0.1')
   .option('-m, --mode <mode>', 'full, slim, typograph or default config', 'slim')
   .option('-s, --source <source>', 'relative path to source directory', '')
@@ -275,12 +354,14 @@ program
   .option('-w, --working-dir <working-dir>', 'working dir', '')
   .option('--foliant-config <config-path>',
     'the configuration file is a foliant from which chapters', 'foliant.yml')
-  .option('--vs-code',
-    'generate settings.json for vs code', false)
+  .option('--format <format>',
+    'config for markdownlint-cli2 (default"jsonc") or "cjs" format with automatic parameter detection',
+    'jsonc')
   .option('-d, --debug', 'output of debugging information', false)
 
 program.parse()
 
 const options = program.opts()
 createConfig(options.mode, options.source, options.project, options.configPath,
-  options.includesMap, options.nodeModules, options.workingDir, options.foliantConfig, options.vsCode, options.debug)
+  options.includesMap, options.nodeModules, options.workingDir,
+  options.foliantConfig, options.debug, options.format)
