@@ -260,6 +260,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   let filesArgMdLinkCheck = (isWin === true) ? `${src}` : `${src}/`
   let existIncludesMap = false
   let listOfFiles = []
+  let multiStream = '-P1'
 
   if (project) {
     args.push(`-p "${project}"`)
@@ -306,6 +307,11 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
     args.push(`--includes-map ${defaultIncludesMap}`)
   }
 
+  // Multi stream markdownlinkcheck
+  if (format === 'cjs') {
+    multiStream = `-P${logicalProcessorCount}`
+  }
+
   if (configPath && fs.existsSync(configPath)) {
     args.push(`-c ${configPath}`)
   }
@@ -334,7 +340,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} ${filesArgMdLint} ${writeLog(markdownLintLog)}`
 
   // Markdownlintcheck
-  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLinkCheck} -type f -name '*.md' -print0 | xargs -0 -n1 -P${logicalProcessorCount} ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLinkCheck} -type f -name '*.md' -print0 | xargs -0 -n1 ${multiStream} ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${filesArgMdLinkCheck} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
 
   commands.markdownlinkcheck = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
