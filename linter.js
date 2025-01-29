@@ -261,7 +261,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   let filesArgMdLinkCheck = (isWin === true) ? `${src}` : `${src}/`
   let existIncludesMap = false
   let listOfFiles = []
-  let multiStream = '-P1'
+  let multiStream = `-P${logicalProcessorCount}`
 
   if (project) {
     args.push(`-p "${project}"`)
@@ -306,11 +306,6 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
     generateIncludesMap(foliantConfig, debug)
     updateListOfFiles(src, defaultIncludesMap, listOfFiles)
     args.push(`--includes-map ${defaultIncludesMap}`)
-  }
-
-  // Multi stream markdownlinkcheck
-  if (format === 'cjs') {
-    multiStream = `-P${logicalProcessorCount}`
   }
 
   if (configPath && fs.existsSync(configPath)) {
