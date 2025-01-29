@@ -25,6 +25,7 @@ const {
 const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
+const isMac = process.platform === 'darwin'
 const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
 let logicalProcessorCount = 1
 if (os.cpus().length > 2) {
@@ -340,6 +341,9 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} ${filesArgMdLint} ${writeLog(markdownLintLog)}`
 
   // Markdownlintcheck
+  if (isMac) {
+    multiStream = `${multiStream} -S1024`
+  }
   commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLinkCheck} -type f -name '*.md' -print0 | xargs -0 ${multiStream} -I{} bash -c 'tempfile=$(mktemp); ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} {} > "$tempfile" 2>&1; cat "$tempfile"; rm "$tempfile"' | tee ${path.join(cwd, markdownLinkCheckLog)}`
 
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${filesArgMdLinkCheck} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
