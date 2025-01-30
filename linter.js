@@ -25,6 +25,7 @@ const {
 const program = new Command()
 const cwd = process.cwd().toString()
 const isWin = process.platform === 'win32'
+const isMac = process.platform === 'darwin'
 const shell = (isWin === true) ? 'cmd.exe' : '/bin/bash'
 let logicalProcessorCount = 1
 if (os.cpus().length > 2) {
@@ -260,6 +261,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   let filesArgMdLinkCheck = (isWin === true) ? `${src}` : `${src}/`
   let existIncludesMap = false
   let listOfFiles = []
+  let multiStream = `-P${logicalProcessorCount}`
 
   if (project) {
     args.push(`-p "${project}"`)
@@ -334,7 +336,11 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   commands.markdownlint = `${commands.createMarkdownlintConfig} && ${execPath}/markdownlint-cli2${fix} ${filesArgMdLint} ${writeLog(markdownLintLog)}`
 
   // Markdownlintcheck
-  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLinkCheck} -type f -name '*.md' -print0 | xargs -0 -n1 -P${logicalProcessorCount} ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}`
+  if (isMac) {
+    multiStream = `${multiStream} -S1024`
+  }
+  commands.markdownlinkcheckSrcUnix = `find ${filesArgMdLinkCheck} -type f -name '*.md' -print0 | xargs -0 ${multiStream} -I{} bash -c 'tempfile=$(mktemp); ${execPath}/markdown-link-check -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} {} > "$tempfile" 2>&1; cat "$tempfile"; rm "$tempfile"' | tee ${path.join(cwd, markdownLinkCheckLog)}`
+
   commands.markdownlinkcheckSrcWin = `del ${path.join(cwd, markdownLinkCheckLog)} & forfiles /P ${filesArgMdLinkCheck} /S /M *.md /C "cmd /c npx markdown-link-check @file -p -c ${path.join(__dirname, '/configs/mdLinkCheckConfig.json')} ${writeLog(path.join(cwd, markdownLinkCheckLog))}"`
 
   commands.markdownlinkcheck = (isWin === true) ? commands.markdownlinkcheckSrcWin : commands.markdownlinkcheckSrcUnix
@@ -417,13 +423,12 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
   let start = false
   let linkcheck = false
   let filename = ''
-  let results = ''
   let markdownlintResults = []
   let counterError = 0
   let markdownlintSuccessful = true
   let LinkcheckSuccessful = true
 
-  function printLinkcheckReport (result, filename) {
+  function printLinkcheckReport (result) {
     const l = []
     if (result.match(regexBad)) {
       const arr = result.replace(/^\s+|\s+$/g, '').split('\n')
@@ -432,6 +437,9 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
         const str = arr[i]
         if (str.match(regexError)) {
           ver = true
+        }
+        if (str.match(regexFile)) {
+          filename = str
         }
         if (ver && str.match(regexBad)) {
           if (filename) {
@@ -499,15 +507,8 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
               linkcheck = true
             }
             if (linkcheck) {
-              if (s.match(regexFile)) {
-                if (results.length > 0) {
-                  printLinkcheckReport(`${results}\n`, filename)
-                }
-                results = ''
-                filename = s
-              }
-              if (filename) {
-                results += s
+              if (s.match(regexFile) && s.match(regexError)) {
+                printLinkcheckReport(`${s}\n`)
               }
             } else {
               spinnerLint.stop(true)
@@ -533,9 +534,6 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
     if (markdownlintResults.length > 0) {
       counterError = printMarkdownReport(markdownlintResults, counterError)
       markdownlintResults = []
-    }
-    if (results.length > 0) {
-      printLinkcheckReport(`${results}\n`, filename)
     }
     spinnerLint.stop(true)
     if (LinkcheckSuccessful && code === 0) {
