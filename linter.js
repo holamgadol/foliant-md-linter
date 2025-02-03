@@ -238,17 +238,19 @@ function writeLog (logFile) {
 }
 
 function removeFinding (logFile) {
-  try {
-    const text = readFileSync(logFile).toString('utf-8').split(/\r?\n/)
-    const lines = []
-    text.forEach((line) => {
-      if (!line.match(regexFinding)) {
-        lines.push(line)
-      }
-    })
-    fs.writeFileSync(logFile, lines.join('\r\n'))
-  } catch (error) {
-    console.error(error)
+  if (fs.existsSync(logFile)) {
+    try {
+      const text = readFileSync(logFile).toString('utf-8').split(/\r?\n/)
+      const lines = []
+      text.forEach((line) => {
+        if (!line.match(regexFinding)) {
+          lines.push(line)
+        }
+      })
+      fs.writeFileSync(logFile, lines.join('\r\n'))
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
 
@@ -490,6 +492,10 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
             spinnerLint.start()
           }
           start = true
+        }
+        if (program.args[0] === 'urls') {
+          start = true
+          linkcheck = true
         }
         if (start) {
           if (!s.match(regexText)) {
