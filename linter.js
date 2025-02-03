@@ -409,7 +409,8 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
       `debug: ${debug}`,
       `allowFailure: ${allowFailure}`,
       `clearConfig: ${clearConfig}`,
-      `format: ${format}`
+      `format: ${format}`,
+      `program: ${program.args[0]}`
     )
   }
 
@@ -536,7 +537,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
       markdownlintResults = []
     }
     spinnerLint.stop(true)
-    if (LinkcheckSuccessful && code === 0) {
+    if (LinkcheckSuccessful && code === 0 && (program.args[0] === 'full-check' || program.args[0] === 'urls')) {
       console.log(`${clc.green('✅')} The external links check was successful!`)
     }
 
@@ -599,7 +600,7 @@ function rmIncludesMap (clearConfig = false) {
 program
   .name('foliant-md-linter')
   .description('CLI tool for linting Foliant markdown sources')
-  .version('0.1.10')
+  .version('0.2.2')
 
 program.command('full-check')
   .description('check md files with markdownlint and markdown-link-check')
@@ -618,7 +619,7 @@ program.command('full-check')
   .addOption(formatOptions)
   .action((options) => {
     execute(commandsGen(options.source, options.config, options.project,
-      options.markdownlintmode, options.foliantConfig, options.nodeModules,
+      options.markdownlintMode, options.foliantConfig, options.nodeModules,
       options.workingDir, options.fix, options.debug, options.format).commands.lintSrcFull,
     options.verbose, options.debug, options.allowFailure, options.clearConfig, options.format)
   })
