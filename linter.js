@@ -13,6 +13,7 @@ const { unlink } = require('fs')
 const Spinner = require('cli-spinner').Spinner
 const clc = require('cli-color')
 const os = require('os')
+const pjson = require('./package.json')
 
 // Import utils.js
 const {
@@ -600,7 +601,7 @@ function rmIncludesMap (clearConfig = false) {
 program
   .name('foliant-md-linter')
   .description('CLI tool for linting Foliant markdown sources')
-  .version('0.2.2')
+  .version(pjson.version)
 
 program.command('full-check')
   .description('check md files with markdownlint and markdown-link-check')
