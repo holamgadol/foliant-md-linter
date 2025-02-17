@@ -13,6 +13,7 @@ const { unlink } = require('fs')
 const Spinner = require('cli-spinner').Spinner
 const clc = require('cli-color')
 const os = require('os')
+const pjson = require('./package.json')
 
 // Import utils.js
 const {
@@ -237,17 +238,19 @@ function writeLog (logFile) {
 }
 
 function removeFinding (logFile) {
-  try {
-    const text = readFileSync(logFile).toString('utf-8').split(/\r?\n/)
-    const lines = []
-    text.forEach((line) => {
-      if (!line.match(regexFinding)) {
-        lines.push(line)
-      }
-    })
-    fs.writeFileSync(logFile, lines.join('\r\n'))
-  } catch (error) {
-    console.error(error)
+  if (fs.existsSync(logFile)) {
+    try {
+      const text = readFileSync(logFile).toString('utf-8').split(/\r?\n/)
+      const lines = []
+      text.forEach((line) => {
+        if (!line.match(regexFinding)) {
+          lines.push(line)
+        }
+      })
+      fs.writeFileSync(logFile, lines.join('\r\n'))
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
 
@@ -298,6 +301,9 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   if (fs.existsSync(foliantConfig) && format === 'cjs') {
     listOfFiles = parseChapters(foliantConfig, src, listOfFiles)
     existIncludesMap = existIncludes(foliantConfig)
+    if (debug) {
+      console.log('need to generate an includes map', existIncludesMap)
+    }
     args.push(`--foliant-config ${foliantConfig}`)
   }
 
@@ -409,7 +415,8 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
       `debug: ${debug}`,
       `allowFailure: ${allowFailure}`,
       `clearConfig: ${clearConfig}`,
-      `format: ${format}`
+      `format: ${format}`,
+      `program: ${program.args[0]}`
     )
   }
 
@@ -489,6 +496,10 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
           }
           start = true
         }
+        if (program.args[0] === 'urls') {
+          start = true
+          linkcheck = true
+        }
         if (start) {
           if (!s.match(regexText)) {
             if (s.match(regexFile)) {
@@ -536,7 +547,7 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
       markdownlintResults = []
     }
     spinnerLint.stop(true)
-    if (LinkcheckSuccessful && code === 0) {
+    if (LinkcheckSuccessful && code === 0 && (program.args[0] === 'full-check' || program.args[0] === 'urls')) {
       console.log(`${clc.green('✅')} The external links check was successful!`)
     }
 
@@ -599,7 +610,7 @@ function rmIncludesMap (clearConfig = false) {
 program
   .name('foliant-md-linter')
   .description('CLI tool for linting Foliant markdown sources')
-  .version('0.1.10')
+  .version(pjson.version)
 
 program.command('full-check')
   .description('check md files with markdownlint and markdown-link-check')
@@ -618,7 +629,7 @@ program.command('full-check')
   .addOption(formatOptions)
   .action((options) => {
     execute(commandsGen(options.source, options.config, options.project,
-      options.markdownlintmode, options.foliantConfig, options.nodeModules,
+      options.markdownlintMode, options.foliantConfig, options.nodeModules,
       options.workingDir, options.fix, options.debug, options.format).commands.lintSrcFull,
     options.verbose, options.debug, options.allowFailure, options.clearConfig, options.format)
   })

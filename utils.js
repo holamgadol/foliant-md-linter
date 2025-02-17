@@ -32,7 +32,21 @@ const parseChapters = (foliantConfig, sourceDir, listOfFiles) => {
 const existIncludes = (foliantConfig) => {
   // Exist includes in list of preprocessors
   const config = getFoliantConfig(foliantConfig)
-  return config.preprocessors.includes('includes')
+  let exist = false
+  config.preprocessors.forEach(function (item) {
+    if (item.constructor === String) {
+      if (item === 'includes') {
+        exist = true
+      }
+    } else if (item.constructor === Object) {
+      Object.keys(item).forEach(function (key) {
+        if (key === 'includes') {
+          exist = true
+        }
+      })
+    }
+  })
+  return exist
 }
 
 const getFoliantConfig = (foliantConfig) => {
