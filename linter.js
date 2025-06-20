@@ -479,6 +479,9 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
     return counterError
   }
 
+  if (program.args[0] === 'urls') {
+    console.log('Checking external links:')
+  }
   spinnerLint.start()
 
   spawnCommand.stdout.on('data', (data) => {
@@ -543,10 +546,16 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
 
   spawnCommand.on('close', (code) => {
     if (markdownlintResults.length > 0) {
+      if (program.args[0] === 'markdown') {
+        spinnerLint.stop(true)
+      }
       counterError = printMarkdownReport(markdownlintResults, counterError)
       markdownlintResults = []
     }
     spinnerLint.stop(true)
+    if (markdownlintSuccessful && markdownlintResults.length === 0 && program.args[0] === 'markdown') {
+      console.log(`${clc.green('✅')} The markdownlint check was successful!`)
+    }
     if (LinkcheckSuccessful && code === 0 && (program.args[0] === 'full-check' || program.args[0] === 'urls')) {
       console.log(`${clc.green('✅')} The external links check was successful!`)
     }
@@ -666,8 +675,9 @@ program.command('urls')
   .addOption(workingDirOption)
   .addOption(formatOptions)
   .action((options) => {
-    execute(commandsGen(options.source, options.config, options.nodeModules,
-      options.workingDir, options.debug, options.format).commands.markdownlinkcheck,
+    execute(commandsGen(options.source, options.config, options.project,
+      options.markdownlintMode, options.foliantConfig, options.nodeModules,
+      options.workingDir, options.fix, options.debug, options.format).commands.markdownlinkcheck,
     options.verbose, options.debug, options.allowFailure, options.clearConfig, options.format)
   })
 
