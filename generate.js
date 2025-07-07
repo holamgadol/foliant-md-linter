@@ -36,7 +36,8 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/fenced-code-in-quote'),
     defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/typograph'),
     defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/validate-internal-links'),
-    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist')
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/frontmatter-tags-exist'),
+    defPath(nodeModulePath, '/node_modules/markdownlint-rules-foliant/lib/shortcode-validator')
   ]
 
   if (fs.existsSync(foliantConfig) && format === 'cjs') {
