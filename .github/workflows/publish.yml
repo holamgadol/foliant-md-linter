@@ -1,26 +1,44 @@
+name: Publish to NPM
+
 on:
   push:
     branches:
       - main
   workflow_run:
     workflows: ["Node CI"]
-    types:
-      - completed
+    types: [completed]
 
 jobs:
   publish:
+    name: Publish Package
     runs-on: ubuntu-latest
     environment: ci
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - run: npm install --no-package-lock
-      - run: npm run lint
-      - run: npm test --runInBand
-      - uses: JS-DevTools/npm-publish@v1
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install --no-package-lock
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test --runInBand
+
+      - name: Publish to NPM
+        uses: JS-DevTools/npm-publish@v3
         with:
           token: ${{ secrets.NPM_TOKEN }}
           check-version: true
           tag: "latest"
+          dry-run: false
