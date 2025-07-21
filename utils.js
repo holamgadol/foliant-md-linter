@@ -18,6 +18,14 @@ const from = {
   tag: '!from',
   resolve: str => ''
 }
+const slug = {
+  tag: '!slug',
+  resolve: str => ''
+}
+const date = {
+  tag: '!date',
+  resolve: str => ''
+}
 
 // Exported functions
 const parseChapters = (foliantConfig, sourceDir, listOfFiles) => {
@@ -52,7 +60,7 @@ const existIncludes = (foliantConfig) => {
 const getFoliantConfig = (foliantConfig) => {
   // Get foliant config
   const configContent = fs.readFileSync(foliantConfig, 'utf8')
-  return YAML.parse(configContent, { customTags: [env, include, path, from] })
+  return YAML.parse(configContent, { customTags: [env, include, path, from, slug, date] })
 }
 
 const updateListOfFiles = (sourceDir, IncludesMapPath, listOfFiles) => {
