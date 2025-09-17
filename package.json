@@ -46,7 +46,6 @@
     "css-select": "5.1.0"
   },
   "jest": {
-    "testTimeout": 30000,
-    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"]
+    "testTimeout": 30000
   }
 }
