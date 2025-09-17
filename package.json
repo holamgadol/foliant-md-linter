@@ -1,6 +1,6 @@
 {
   "name": "foliant-md-linter",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "CLI tool for linting Foliant markdown sources",
   "license": "MIT",
   "homepage": "https://github.com/holamgadol/foliant-md-linter",
@@ -36,5 +36,8 @@
     "eslint-plugin-promise": "^5.2.0",
     "husky": "^7.0.4",
     "jest": "^27.5.1"
+  },
+  "overrides": {
+    "undici": "5.28.4"
   }
 }
