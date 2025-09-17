@@ -38,14 +38,6 @@
     "jest": "^27.5.1"
   },
   "overrides": {
-    "undici": "5.28.4",
-    "cheerio": "1.0.0-rc.12",
-    "htmlparser2": "8.0.2",
-    "domhandler": "5.0.3",
-    "domutils": "3.1.0",
-    "css-select": "5.1.0"
-  },
-  "jest": {
-    "testTimeout": 30000
+    "undici": "5.28.4"
   }
 }
