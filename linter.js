@@ -102,6 +102,9 @@ const workingDirOption = new Option('-w --working-dir <working-dir>',
 const formatOptions = new Option('--format <format>',
   'format of the config file')
   .default('jsonc').conflicts(['project', 'working-dir', 'node-modules'])
+const extendPreprocessorsOption = new Option('--ext-prep <file-path>',
+  'an extended list of preprocessors that runs before building the includes map')
+  .default('')
 
 // The path to execution
 let execPath = path.resolve(__dirname, '../.bin/')
@@ -256,7 +259,7 @@ function removeFinding (logFile) {
 
 const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig,
-  nodeModules = '', workinDir = '', isFix = false, debug = false, format = '') {
+  nodeModules = '', workinDir = '', isFix = false, debug = false, format = '', extendPrep = '') {
   const commands = {}
   const fix = (isFix === true) ? '-fix' : ''
   const args = []
@@ -277,6 +280,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
       `project: ${project}`,
       `markdownlintMode: ${markdownlintMode}`,
       `foliantConfig: ${foliantConfig}`,
+      `extendPrep: ${extendPrep}`,
       `nodeModules: ${nodeModules}`,
       `workinDir: ${workinDir}`,
       `isFix: ${isFix}`,
@@ -309,7 +313,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
 
   // Create includes map
   if (existIncludesMap && format === 'cjs') {
-    generateIncludesMap(foliantConfig, debug)
+    generateIncludesMap(foliantConfig, extendPrep,  debug)
     updateListOfFiles(src, defaultIncludesMap, listOfFiles)
     args.push(`--includes-map ${defaultIncludesMap}`)
   }
@@ -359,8 +363,8 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   }
 }
 
-function generateIncludesMap (foliantConfig, debug) {
-  createConfigIncludesMap(foliantConfig, debug)
+function generateIncludesMap (foliantConfig, extendPrep, debug) {
+  createConfigIncludesMap(foliantConfig, extendPrep, debug)
   const genIncludesMapCommand = `foliant make --config ${usedFoliantConfig} pre --logs .temp_project_logs ${writeLog(genIncludesMapLog)} && rm -rf temp_project.pre/ && rm -rf .temp_project_logs/`
 
   spinnerPrepare.start()
@@ -568,18 +572,23 @@ function execute (command, verbose = false, debug = false, allowFailure = false,
   })
 }
 
-function createConfigIncludesMap (foliantConfig, debug) {
+function createConfigIncludesMap (foliantConfig, extendPrep, debug) {
   /* eslint-disable no-useless-escape */
   const content = fs.readFileSync(foliantConfig)
   const onlyIncludesMapConf = []
+  let extendPreprocessors = ""
+
   onlyIncludesMapConf.push(`title: !include ${foliantConfig}#title
 chapters: !include ${foliantConfig}#chapters
 tmp_dir: __tempproj__`)
   if (content.includes('escape_code:')) {
     onlyIncludesMapConf.push(`escape_code: !include ${foliantConfig}#escape_code`)
   }
-
+  if (fs.existsSync(extendPrep)) {
+    extendPreprocessors = fs.readFileSync(extendPrep)
+  }
   onlyIncludesMapConf.push(`preprocessors:
+  ${extendPreprocessors}
   - includes:
       includes_map:
         - anchors
@@ -616,94 +625,44 @@ function rmIncludesMap (clearConfig = false) {
 }
 
 // Variants of program execution
-program
-  .name('foliant-md-linter')
-  .description('CLI tool for linting Foliant markdown sources')
-  .version(pjson.version)
+function setupCommand(name, description, commandKey, optionsGroup = 'all') {
+  const cmd = program.command(name).description(description);
 
-program.command('full-check')
-  .description('check md files with markdownlint and markdown-link-check')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowFailureOption)
-  .addOption(clearConfigOption)
-  .addOption(fixOption)
-  .addOption(markdownlintModeOption)
-  .addOption(foliantConfigOption)
-  .addOption(nodeModulesOption)
-  .addOption(workingDirOption)
-  .addOption(formatOptions)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project,
-      options.markdownlintMode, options.foliantConfig, options.nodeModules,
-      options.workingDir, options.fix, options.debug, options.format).commands.lintSrcFull,
-    options.verbose, options.debug, options.allowFailure, options.clearConfig, options.format)
-  })
+  const options = {
+    all: [verboseOption, sourceOption, configOption, projectOption, debugOption,
+          allowFailureOption, clearConfigOption, fixOption, markdownlintModeOption,
+          foliantConfigOption, nodeModulesOption, workingDirOption, formatOptions,
+          extendPreprocessorsOption],
+    basic: [verboseOption, sourceOption, debugOption, allowFailureOption,
+            clearConfigOption, workingDirOption, formatOptions, extendPreprocessorsOption],
+    minimal: [verboseOption]
+  }[optionsGroup];
 
-program.command('markdown')
-  .description('check md files for errors with markdownlint')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(configOption)
-  .addOption(projectOption)
-  .addOption(debugOption)
-  .addOption(allowFailureOption)
-  .addOption(clearConfigOption)
-  .addOption(fixOption)
-  .addOption(markdownlintModeOption)
-  .addOption(foliantConfigOption)
-  .addOption(nodeModulesOption)
-  .addOption(workingDirOption)
-  .addOption(formatOptions)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project,
-      options.markdownlintMode, options.foliantConfig, options.nodeModules,
-      options.workingDir, options.fix, options.debug, options.format).commands.markdownlint,
-    options.verbose, options.debug, options.allowFailure, options.clearConfig, options.format)
-  })
+  options.forEach(opt => cmd.addOption(opt));
 
-program.command('urls')
-  .description('validate external links with markdown-link-check')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(debugOption)
-  .addOption(allowFailureOption)
-  .addOption(clearConfigOption)
-  .addOption(workingDirOption)
-  .addOption(formatOptions)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project,
-      options.markdownlintMode, options.foliantConfig, options.nodeModules,
-      options.workingDir, options.fix, options.debug, options.format).commands.markdownlinkcheck,
-    options.verbose, options.debug, options.allowFailure, options.clearConfig, options.format)
-  })
+  cmd.action((options) => {
+    if (commandKey === 'printLintResults') {
+      printLintResults(options.verbose);
+    } else {
+      const command = commandsGen(
+        options.source, options.config, options.project,
+        options.markdownlintMode, options.foliantConfig, options.nodeModules,
+        options.workingDir, options.fix, options.debug, options.format, options.extPrep
+      ).commands[commandKey];
 
-program.command('print')
-  .description('print linting results')
-  .addOption(verboseOption)
-  .action((options) => {
-    printLintResults(options.verbose)
-  })
+      execute(
+        command,
+        options.verbose, options.debug, options.allowFailure,
+        options.clearConfig, options.format
+      );
+    }
+  });
+}
 
-program.command('create-config')
-  .description('create markdownlint config')
-  .addOption(verboseOption)
-  .addOption(sourceOption)
-  .addOption(projectOption)
-  .addOption(markdownlintModeOption)
-  .addOption(debugOption)
-  .addOption(foliantConfigOption)
-  .addOption(nodeModulesOption)
-  .addOption(workingDirOption)
-  .addOption(formatOptions)
-  .action((options) => {
-    execute(commandsGen(options.source, options.config, options.project,
-      options.markdownlintMode, options.foliantConfig, options.nodeModules,
-      options.workingDir, options.fix, options.debug, options.format).commands.createMarkdownlintConfig,
-    options.verbose, options.debug)
-  })
+setupCommand('full-check', 'check md files with markdownlint and markdown-link-check', 'lintSrcFull');
+setupCommand('markdown', 'check md files for errors with markdownlint', 'markdownlint');
+setupCommand('urls', 'validate external links with markdown-link-check', 'markdownlinkcheck', 'basic');
+setupCommand('print', 'print linting results', 'printLintResults', 'minimal');
+setupCommand('create-config', 'create markdownlint config', 'createMarkdownlintConfig', 'all');
 
 program.parse()
