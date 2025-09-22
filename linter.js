@@ -13,7 +13,6 @@ const { unlink } = require('fs')
 const Spinner = require('cli-spinner').Spinner
 const clc = require('cli-color')
 const os = require('os')
-const pjson = require('./package.json')
 
 // Import utils.js
 const {
@@ -316,7 +315,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
 
   // Create includes map
   if (existIncludesMap && format === 'cjs') {
-    generateIncludesMap(foliantConfig, extendPrep,  debug)
+    generateIncludesMap(foliantConfig, extendPrep, debug)
     updateListOfFiles(src, defaultIncludesMap, listOfFiles)
     args.push(`--includes-map ${defaultIncludesMap}`)
   }
@@ -369,7 +368,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
 function generateIncludesMap (foliantConfig, extendPrep, debug) {
   createConfigIncludesMap(foliantConfig, extendPrep, debug)
   const genIncludesMapCommand = `foliant make --config ${usedFoliantConfig} pre --logs .temp_project_logs ${writeLog(genIncludesMapLog)}`
-  const cleanCommand = `rm -rf temp_project.pre/ && rm -rf .temp_project_logs/`
+  const cleanCommand = 'rm -rf temp_project.pre/ && rm -rf .temp_project_logs/'
 
   spinnerPrepare.start()
   const generateProcess = spawnSync(genIncludesMapCommand, { shell: shell })
@@ -377,12 +376,12 @@ function generateIncludesMap (foliantConfig, extendPrep, debug) {
     console.error('Error generate temporary project:', generateProcess.error)
   } else {
     if (debug) {
-      console.log(`Subprocess "Foliant" exited with code ${generate.status}`)
+      console.log(`Subprocess "Foliant" exited with code ${generateProcess.status}`)
     }
   }
 
-  anchors = parseAnchorsFromDir('./temp_project.pre/')
-  fs.writeFileSync(defaultAnchorsMap, JSON.stringify(anchors, null, 4));
+  const anchors = parseAnchorsFromDir('./temp_project.pre/')
+  fs.writeFileSync(defaultAnchorsMap, JSON.stringify(anchors, null, 4))
 
   const removeProcess = spawnSync(cleanCommand, { shell: shell })
   if (removeProcess.error) {
@@ -591,7 +590,7 @@ function createConfigIncludesMap (foliantConfig, extendPrep, debug) {
   /* eslint-disable no-useless-escape */
   const content = fs.readFileSync(foliantConfig)
   const onlyIncludesMapConf = []
-  let extendPreprocessors = ""
+  let extendPreprocessors = ''
 
   onlyIncludesMapConf.push(`title: !include ${foliantConfig}#title
 chapters: !include ${foliantConfig}#chapters
@@ -640,44 +639,44 @@ function rmIncludesMap (clearConfig = false) {
 }
 
 // Variants of program execution
-function setupCommand(name, description, commandKey, optionsGroup = 'all') {
-  const cmd = program.command(name).description(description);
+function setupCommand (name, description, commandKey, optionsGroup = 'all') {
+  const cmd = program.command(name).description(description)
 
   const options = {
     all: [verboseOption, sourceOption, configOption, projectOption, debugOption,
-          allowFailureOption, clearConfigOption, fixOption, markdownlintModeOption,
-          foliantConfigOption, nodeModulesOption, workingDirOption, formatOptions,
-          extendPreprocessorsOption],
+      allowFailureOption, clearConfigOption, fixOption, markdownlintModeOption,
+      foliantConfigOption, nodeModulesOption, workingDirOption, formatOptions,
+      extendPreprocessorsOption],
     basic: [verboseOption, sourceOption, debugOption, allowFailureOption,
-            clearConfigOption, workingDirOption, formatOptions, extendPreprocessorsOption],
+      clearConfigOption, workingDirOption, formatOptions, extendPreprocessorsOption],
     minimal: [verboseOption]
-  }[optionsGroup];
+  }[optionsGroup]
 
-  options.forEach(opt => cmd.addOption(opt));
+  options.forEach(opt => cmd.addOption(opt))
 
   cmd.action((options) => {
     if (commandKey === 'printLintResults') {
-      printLintResults(options.verbose);
+      printLintResults(options.verbose)
     } else {
       const command = commandsGen(
         options.source, options.config, options.project,
         options.markdownlintMode, options.foliantConfig, options.nodeModules,
         options.workingDir, options.fix, options.debug, options.format, options.extPrep
-      ).commands[commandKey];
+      ).commands[commandKey]
 
       execute(
         command,
         options.verbose, options.debug, options.allowFailure,
         options.clearConfig, options.format
-      );
+      )
     }
-  });
+  })
 }
 
-setupCommand('full-check', 'check md files with markdownlint and markdown-link-check', 'lintSrcFull');
-setupCommand('markdown', 'check md files for errors with markdownlint', 'markdownlint');
-setupCommand('urls', 'validate external links with markdown-link-check', 'markdownlinkcheck', 'basic');
-setupCommand('print', 'print linting results', 'printLintResults', 'minimal');
-setupCommand('create-config', 'create markdownlint config', 'createMarkdownlintConfig', 'all');
+setupCommand('full-check', 'check md files with markdownlint and markdown-link-check', 'lintSrcFull')
+setupCommand('markdown', 'check md files for errors with markdownlint', 'markdownlint')
+setupCommand('urls', 'validate external links with markdown-link-check', 'markdownlinkcheck', 'basic')
+setupCommand('print', 'print linting results', 'printLintResults', 'minimal')
+setupCommand('create-config', 'create markdownlint config', 'createMarkdownlintConfig', 'all')
 
 program.parse()

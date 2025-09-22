@@ -103,34 +103,34 @@ function eachRecursive (obj, list, sourceDir) {
   }
 }
 
-function parseAnchorsFromDir(dir) {
-    const result = {};
+function parseAnchorsFromDir (dir) {
+  const result = {}
 
-    fs.readdirSync(dir, { recursive: true })
-        .filter(f => f.endsWith('.md'))
-        .forEach(file => {
-            const content = fs.readFileSync(`${dir}/${file}`, 'utf8');
-            const anchors = new Set();
+  fs.readdirSync(dir, { recursive: true })
+    .filter(f => f.endsWith('.md'))
+    .forEach(file => {
+      const content = fs.readFileSync(`${dir}/${file}`, 'utf8')
+      const anchors = new Set()
 
-            content.replace(/{#([\w-]+)}/g, (_, id) => anchors.add(`#${id}`));
-            // content.replace(/^#+\s+(.+)$/gm, (_, title) => {
-            //     const anchor = '#' + title.toLowerCase()
-            //         .replace(/\s*{#[\w-]+}\s*$/, '')
-            //         .replace(/[^\w\sa-zа-яё]/gi, '')
-            //         .replace(/\s+/g, '-');
-            //     anchors.add(anchor);
-            // });
-            content.replace(/\sid=["']([\w-]+)["']/gi, (_, id) => anchors.add(`#${id}`));
+      content.replace(/{#([\w-]+)}/g, (_, id) => anchors.add(`#${id}`))
+      // content.replace(/^#+\s+(.+)$/gm, (_, title) => {
+      //     const anchor = '#' + title.toLowerCase()
+      //         .replace(/\s*{#[\w-]+}\s*$/, '')
+      //         .replace(/[^\w\sa-zа-яё]/gi, '')
+      //         .replace(/\s+/g, '-');
+      //     anchors.add(anchor);
+      // });
+      content.replace(/\sid=["']([\w-]+)["']/gi, (_, id) => anchors.add(`#${id}`))
 
-            if (anchors.size) {
-              result[`src/${file}`] = [...anchors];
-            }
-        });
+      if (anchors.size) {
+        result[`src/${file}`] = [...anchors]
+      }
+    })
 
-    return result;
+  return result
 }
 
-const trimEmptyLines = text => String(text).replace(/^\n+|\n+$/g, '');
+const trimEmptyLines = text => String(text).replace(/^\n+|\n+$/g, '')
 
 // Export functions
 module.exports = {
