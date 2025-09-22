@@ -19,7 +19,9 @@ const pjson = require('./package.json')
 const {
   parseChapters,
   updateListOfFiles,
-  existIncludes
+  existIncludes,
+  parseAnchorsFromDir,
+  trimEmptyLines
 } = require('./utils.js')
 
 // The subprocess
@@ -56,6 +58,7 @@ const defaultConfig = path.resolve(cwd, '.markdownlint-cli2')
 const defaultSrc = 'src'
 const defaultFoliantConfig = path.resolve(cwd, 'foliant.yml')
 const defaultIncludesMap = './includes_map.json'
+const defaultAnchorsMap = './anchors_map.json'
 const usedFoliantConfig = path.resolve(cwd, 'only_includes.yml')
 
 // Regex
@@ -365,19 +368,31 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
 
 function generateIncludesMap (foliantConfig, extendPrep, debug) {
   createConfigIncludesMap(foliantConfig, extendPrep, debug)
-  const genIncludesMapCommand = `foliant make --config ${usedFoliantConfig} pre --logs .temp_project_logs ${writeLog(genIncludesMapLog)} && rm -rf temp_project.pre/ && rm -rf .temp_project_logs/`
+  const genIncludesMapCommand = `foliant make --config ${usedFoliantConfig} pre --logs .temp_project_logs ${writeLog(genIncludesMapLog)}`
+  const cleanCommand = `rm -rf temp_project.pre/ && rm -rf .temp_project_logs/`
 
   spinnerPrepare.start()
-  const result = spawnSync(genIncludesMapCommand, { shell: shell })
-  if (result.error) {
-    spinnerPrepare.stop(true)
-    console.error('Error generation includes map:', result.error)
+  const generateProcess = spawnSync(genIncludesMapCommand, { shell: shell })
+  if (generateProcess.error) {
+    console.error('Error generate temporary project:', generateProcess.error)
   } else {
-    spinnerPrepare.stop(true)
     if (debug) {
-      console.log(`Subprocess "Foliant" exited with code ${result.status}`)
+      console.log(`Subprocess "Foliant" exited with code ${generate.status}`)
     }
   }
+
+  anchors = parseAnchorsFromDir('./temp_project.pre/')
+  fs.writeFileSync(defaultAnchorsMap, JSON.stringify(anchors, null, 4));
+
+  const removeProcess = spawnSync(cleanCommand, { shell: shell })
+  if (removeProcess.error) {
+    console.error('Error remove temporary project:', removeProcess.error)
+  } else {
+    if (debug) {
+      console.log(`Subprocess "rm -rf" exited with code ${removeProcess.status}`)
+    }
+  }
+  spinnerPrepare.stop(true)
 }
 
 function clearConfigFile (clearConfig, format) {
@@ -586,17 +601,17 @@ tmp_dir: __tempproj__`)
   }
   if (fs.existsSync(extendPrep)) {
     extendPreprocessors = fs.readFileSync(extendPrep)
+    extendPreprocessors = trimEmptyLines(extendPreprocessors)
   }
-  onlyIncludesMapConf.push(`preprocessors:
-  ${extendPreprocessors}
-  - includes:
-      includes_map:
-        - anchors
-  - runcommands:
-      commands:
-        - cp $\{WORKING_DIR\}/static/includes_map.json ./
-      targets:
-        - pre
+  onlyIncludesMapConf.push(`preprocessors:\n${extendPreprocessors}
+    - includes:
+        includes_map:
+          - anchors
+    - runcommands:
+        commands:
+          - cp $\{WORKING_DIR\}/static/includes_map.json ./
+        targets:
+          - pre
 backend_config:
   pre:
     slug: temp_project`)
