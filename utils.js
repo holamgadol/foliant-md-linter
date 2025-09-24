@@ -103,31 +103,31 @@ function eachRecursive (obj, list, sourceDir) {
   }
 }
 
-function parseAnchorsFromDir (dir) {
-  const result = {}
+function parseAnchorsFromDir (dir, listOfFiles) {
+  const results = []
+  listOfFiles.forEach(file => {
+    const content = fs.readFileSync(`${dir}${file.substring(4)}`, 'utf8')
+    const anchors = new Set()
+    const result = {}
 
-  fs.readdirSync(dir, { recursive: true })
-    .filter(f => f.endsWith('.md'))
-    .forEach(file => {
-      const content = fs.readFileSync(`${dir}/${file}`, 'utf8')
-      const anchors = new Set()
+    content.replace(/{#([\w-]+)}/g, (_, id) => anchors.add(`${id}`))
+    // content.replace(/^#+\s+(.+)$/gm, (_, title) => {
+    //     const anchor = '#' + title.toLowerCase()
+    //         .replace(/\s*{#[\w-]+}\s*$/, '')
+    //         .replace(/[^\w\sa-zа-яё]/gi, '')
+    //         .replace(/\s+/g, '-');
+    //     anchors.add(anchor);
+    // });
+    content.replace(/\sid=["']([\w-]+)["']/gi, (_, id) => anchors.add(`${id}`))
 
-      content.replace(/{#([\w-]+)}/g, (_, id) => anchors.add(`#${id}`))
-      // content.replace(/^#+\s+(.+)$/gm, (_, title) => {
-      //     const anchor = '#' + title.toLowerCase()
-      //         .replace(/\s*{#[\w-]+}\s*$/, '')
-      //         .replace(/[^\w\sa-zа-яё]/gi, '')
-      //         .replace(/\s+/g, '-');
-      //     anchors.add(anchor);
-      // });
-      content.replace(/\sid=["']([\w-]+)["']/gi, (_, id) => anchors.add(`#${id}`))
+    if (anchors.size) {
+      result['file'] = `${file}`
+      result['anchors'] = [...anchors]
+      results.push(result)
+    }
+  })
 
-      if (anchors.size) {
-        result[`src/${file}`] = [...anchors]
-      }
-    })
-
-  return result
+  return results
 }
 
 const trimEmptyLines = text => String(text).replace(/^\n+|\n+$/g, '')

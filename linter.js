@@ -315,7 +315,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
 
   // Create includes map
   if (existIncludesMap && format === 'cjs') {
-    generateIncludesMap(foliantConfig, extendPrep, debug)
+    generateIncludesMap(foliantConfig, extendPrep, listOfFiles, debug)
     updateListOfFiles(src, defaultIncludesMap, listOfFiles)
     args.push(`--includes-map ${defaultIncludesMap}`)
   }
@@ -365,7 +365,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   }
 }
 
-function generateIncludesMap (foliantConfig, extendPrep, debug) {
+function generateIncludesMap (foliantConfig, extendPrep, listOfFiles, debug) {
   createConfigIncludesMap(foliantConfig, extendPrep, debug)
   const genIncludesMapCommand = `foliant make --config ${usedFoliantConfig} pre --logs .temp_project_logs ${writeLog(genIncludesMapLog)}`
   const cleanCommand = 'rm -rf temp_project.pre/ && rm -rf .temp_project_logs/'
@@ -380,7 +380,7 @@ function generateIncludesMap (foliantConfig, extendPrep, debug) {
     }
   }
 
-  const anchors = parseAnchorsFromDir('./temp_project.pre/')
+  const anchors = parseAnchorsFromDir('./temp_project.pre/', listOfFiles)
   fs.writeFileSync(defaultAnchorsMap, JSON.stringify(anchors, null, 4))
 
   const removeProcess = spawnSync(cleanCommand, { shell: shell })
@@ -594,7 +594,8 @@ function createConfigIncludesMap (foliantConfig, extendPrep, debug) {
 
   onlyIncludesMapConf.push(`title: !include ${foliantConfig}#title
 chapters: !include ${foliantConfig}#chapters
-tmp_dir: __tempproj__`)
+tmp_dir: __tempproj__
+src_dir: src`)
   if (content.includes('escape_code:')) {
     onlyIncludesMapConf.push(`escape_code: !include ${foliantConfig}#escape_code`)
   }
