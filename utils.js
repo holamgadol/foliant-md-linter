@@ -121,8 +121,8 @@ function parseAnchorsFromDir (dir, listOfFiles) {
     content.replace(/\sid=["']([\w-]+)["']/gi, (_, id) => anchors.add(`${id}`))
 
     if (anchors.size) {
-      result['file'] = `${file}`
-      result['anchors'] = [...anchors]
+      result.file = `${file}`
+      result.anchors = [...anchors]
       results.push(result)
     }
   })
