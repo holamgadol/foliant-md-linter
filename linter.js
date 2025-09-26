@@ -378,19 +378,20 @@ function generateIncludesMap (foliantConfig, extendPrep, listOfFiles, debug) {
     if (debug) {
       console.log(`Subprocess "Foliant" exited with code ${generateProcess.status}`)
     }
-  }
 
-  const anchors = parseAnchorsFromDir('./temp_project.pre/', listOfFiles)
-  fs.writeFileSync(defaultAnchorsMap, JSON.stringify(anchors, null, 4))
+    const anchors = parseAnchorsFromDir('./temp_project.pre/', listOfFiles)
+    fs.writeFileSync(defaultAnchorsMap, JSON.stringify(anchors, null, 4))
 
-  const removeProcess = spawnSync(cleanCommand, { shell: shell })
-  if (removeProcess.error) {
-    console.error('Error remove temporary project:', removeProcess.error)
-  } else {
-    if (debug) {
-      console.log(`Subprocess "rm -rf" exited with code ${removeProcess.status}`)
+    const removeProcess = spawnSync(cleanCommand, { shell: shell })
+    if (removeProcess.error) {
+      console.error('Error remove temporary project:', removeProcess.error)
+    } else {
+      if (debug) {
+        console.log(`Subprocess "rm -rf" exited with code ${removeProcess.status}`)
+      }
     }
   }
+
   spinnerPrepare.stop(true)
 }
 
