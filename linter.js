@@ -314,7 +314,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   }
 
   // Create includes map
-  if (existIncludesMap && format === 'cjs') {
+  if (format === 'cjs') {
     generateIncludesMap(foliantConfig, extendPrep, listOfFiles, debug)
     updateListOfFiles(src, defaultIncludesMap, listOfFiles)
     args.push(`--includes-map ${defaultIncludesMap}`)
@@ -640,6 +640,44 @@ function rmIncludesMap (clearConfig = false) {
   }
 }
 
+function createSourceMaps (
+  src = defaultSrc,
+  foliantConfig = defaultFoliantConfig,
+  debug = false, extendPrep = '') {
+  let listOfFiles = []
+
+  if (debug) {
+    console.log('create source maps params:\n',
+      `src: ${src}`,
+      `foliantConfig: ${foliantConfig}`,
+      `extendPrep: ${extendPrep}`,
+      `debug: ${debug}`
+    )
+  }
+
+  if (fs.existsSync(foliantConfig)) {
+    listOfFiles = parseChapters(foliantConfig, src, listOfFiles)
+    existIncludesMap = existIncludes(foliantConfig)
+  } else {
+    console.log(`${foliantConfig} does not exist`)
+    return
+  }
+  generateIncludesMap(
+    foliantConfig, extendPrep,
+    listOfFiles, debug
+  )
+  updateListOfFiles(
+    src, defaultIncludesMap, listOfFiles
+  )
+  if (fs.existsSync(defaultIncludesMap)) {
+    console.log(`Includes map: ${defaultIncludesMap}`)
+  }
+    if (fs.existsSync(defaultAnchorsMap)) {
+    console.log(`Anchors map: ${defaultAnchorsMap} `)
+  }
+  return
+}
+
 // Variants of program execution
 function setupCommand (name, description, commandKey, optionsGroup = 'all') {
   const cmd = program.command(name).description(description)
@@ -651,7 +689,9 @@ function setupCommand (name, description, commandKey, optionsGroup = 'all') {
       extendPreprocessorsOption],
     basic: [verboseOption, sourceOption, debugOption, allowFailureOption,
       clearConfigOption, workingDirOption, formatOptions, extendPreprocessorsOption],
-    minimal: [verboseOption]
+    minimal: [verboseOption],
+    maps: [verboseOption, sourceOption, debugOption,
+      foliantConfigOption, extendPreprocessorsOption],
   }[optionsGroup]
 
   options.forEach(opt => cmd.addOption(opt))
@@ -659,6 +699,11 @@ function setupCommand (name, description, commandKey, optionsGroup = 'all') {
   cmd.action((options) => {
     if (commandKey === 'printLintResults') {
       printLintResults(options.verbose)
+    } else if (commandKey === 'creatSourceMaps') {
+      createSourceMaps(
+        options.source, options.foliantConfig,
+        options.debug, options.extPrep
+      )
     } else {
       const command = commandsGen(
         options.source, options.config, options.project,
@@ -680,5 +725,6 @@ setupCommand('markdown', 'check md files for errors with markdownlint', 'markdow
 setupCommand('urls', 'validate external links with markdown-link-check', 'markdownlinkcheck', 'basic')
 setupCommand('print', 'print linting results', 'printLintResults', 'minimal')
 setupCommand('create-config', 'create markdownlint config', 'createMarkdownlintConfig', 'all')
+setupCommand('create-maps', 'generating a includes map and anchors map', 'creatSourceMaps', 'maps')
 
 program.parse()
