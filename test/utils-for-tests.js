@@ -9,7 +9,7 @@ const isWin = process.platform === 'win32'
 const linkCheckFilePrint = (file) => {
   if (process.platform === 'win32') {
     file = path.posix.basename(file)
-  } else if (process.platform === 'linux') {
+  } else if (process.platform === 'linux' || process.platform === 'darwin') {
     file = file.replace('//', '/')
   }
   return file
