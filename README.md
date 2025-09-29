@@ -118,12 +118,14 @@ Run _foliant-md-linter_ from the project root with following commands and option
 
 - `markdown` – check md files for errors with markdownlint
     - `-v`, `-s`, `-c`, `-d`, `-a`, `-l`, `-f`, `-m`, `--foliant-config`
-- `urls` validate external links with markdown-link-check
+- `urls` – validate external links with markdown-link-check
     - `-v`, `-s`, `-d`, `-a`, `-l`
 - `print` print linting results
     - `-v`
-- `create-config` create markdownlint config for styleguide adherence
+- `create-config` – create markdownlint config for styleguide adherence
     - `-v`, `-s`, `-p`, `-d`, `-m`
+- `create-maps` – create source maps using `temp_project', without checking the linter
+    - `-v`, `-s`, `-d`, `--foliant-config`, `--ext-prep`
 
 `.markdownlintignore` – an exception file, each line of which can contain a glob.
 
