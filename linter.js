@@ -103,7 +103,7 @@ const workingDirOption = new Option('-w --working-dir <working-dir>',
   .default('')
 const formatOptions = new Option('--format <format>',
   'format of the config file')
-  .default('jsonc').conflicts(['project', 'working-dir', 'node-modules'])
+  .default('cjs').conflicts(['project', 'working-dir', 'node-modules'])
 const extendPreprocessorsOption = new Option('--ext-prep <file-path>',
   'an extended list of preprocessors that runs before building the includes map')
   .default('')
@@ -379,8 +379,8 @@ function generateIncludesMap (foliantConfig, extendPrep, listOfFiles, debug) {
       console.log(`Subprocess "Foliant" exited with code ${generateProcess.status}`)
     }
 
-    const anchors = parseAnchorsFromDir('./temp_project.pre/', listOfFiles)
-    fs.writeFileSync(defaultAnchorsMap, JSON.stringify(anchors, null, 4))
+    const anchors = parseAnchorsFromDir('./temp_project.pre/', listOfFiles, false)
+    fs.writeFileSync(defaultAnchorsMap, JSON.stringify(anchors, null, null))
 
     const removeProcess = spawnSync(cleanCommand, { shell: shell })
     if (removeProcess.error) {
