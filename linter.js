@@ -657,7 +657,6 @@ function createSourceMaps (
 
   if (fs.existsSync(foliantConfig)) {
     listOfFiles = parseChapters(foliantConfig, src, listOfFiles)
-    existIncludesMap = existIncludes(foliantConfig)
   } else {
     console.log(`${foliantConfig} does not exist`)
     return
@@ -672,10 +671,9 @@ function createSourceMaps (
   if (fs.existsSync(defaultIncludesMap)) {
     console.log(`Includes map: ${defaultIncludesMap}`)
   }
-    if (fs.existsSync(defaultAnchorsMap)) {
+  if (fs.existsSync(defaultAnchorsMap)) {
     console.log(`Anchors map: ${defaultAnchorsMap} `)
   }
-  return
 }
 
 // Variants of program execution
@@ -691,7 +689,7 @@ function setupCommand (name, description, commandKey, optionsGroup = 'all') {
       clearConfigOption, workingDirOption, formatOptions, extendPreprocessorsOption],
     minimal: [verboseOption],
     maps: [verboseOption, sourceOption, debugOption,
-      foliantConfigOption, extendPreprocessorsOption],
+      foliantConfigOption, extendPreprocessorsOption]
   }[optionsGroup]
 
   options.forEach(opt => cmd.addOption(opt))
