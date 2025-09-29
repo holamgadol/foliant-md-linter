@@ -103,7 +103,7 @@ const workingDirOption = new Option('-w --working-dir <working-dir>',
   .default('')
 const formatOptions = new Option('--format <format>',
   'format of the config file')
-  .default('cjs').conflicts(['project', 'working-dir', 'node-modules'])
+  .default('jsonc').conflicts(['project', 'working-dir', 'node-modules'])
 const extendPreprocessorsOption = new Option('--ext-prep <file-path>',
   'an extended list of preprocessors that runs before building the includes map')
   .default('')
@@ -314,7 +314,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   }
 
   // Create includes map
-  if (format === 'cjs') {
+  if (existIncludesMap && format === 'cjs') {
     generateIncludesMap(foliantConfig, extendPrep, listOfFiles, debug)
     updateListOfFiles(src, defaultIncludesMap, listOfFiles)
     args.push(`--includes-map ${defaultIncludesMap}`)
