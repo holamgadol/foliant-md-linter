@@ -697,7 +697,7 @@ function setupCommand (name, description, commandKey, optionsGroup = 'all') {
   cmd.action((options) => {
     if (commandKey === 'printLintResults') {
       printLintResults(options.verbose)
-    } else if (commandKey === 'createSourceMaps') {
+    } else if (commandKey === 'createMaps') {
       createSourceMaps(
         options.source, options.foliantConfig,
         options.debug, options.extPrep
@@ -723,6 +723,6 @@ setupCommand('markdown', 'check md files for errors with markdownlint', 'markdow
 setupCommand('urls', 'validate external links with markdown-link-check', 'markdownlinkcheck', 'basic')
 setupCommand('print', 'print linting results', 'printLintResults', 'minimal')
 setupCommand('create-config', 'create markdownlint config', 'createMarkdownlintConfig', 'all')
-setupCommand('create-maps', 'generating a includes map and anchors map', 'createSourceMaps', 'maps')
+setupCommand('create-maps', 'generating a includes map and anchors map', 'createMaps', 'maps')
 
 program.parse()
