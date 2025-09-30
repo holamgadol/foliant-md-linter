@@ -1,0 +1,8 @@
+title: test
+
+chapters:
+  - main.md
+  - content.md
+
+preprocessors:
+  - includes
