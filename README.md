@@ -110,15 +110,22 @@ Run _foliant-md-linter_ from the project root with following commands and option
         - `mdlint-default` – check md files for critical formatting errors with markdownlint and validate external links with markdown-link-check
     - `--foliant-config` – set the configuration file is a foliant from which chapters (default: `./foliant.yml`)
     - `--format` – set the format of the markdownlint-cli2 config file (default: `jsonc`, incompatible with `--project`, `--node-modules`, `--working-dir`)
+    - `--ext-prep` – the extended list of preprocessors is used when preparing the `includes_map.json` and `anchors_map.json`.
+      Source code maps:
+        - `includes_map.json` – the includes map contains information about the links in the foliant-project files resulting from the operation of the [includes preprocessor](https://foliant-docs.github.io/docs/preprocessors/includes/).
+        - `anchors_map.json` – the anchor map has the same structure as the includes map, but across all project files ([the chapters list](https://foliant-docs.github.io/docs/config/#chapters)). It is obtained by parsing files obtained during the `temp_project` project build.
+        - `temp_project` – foliant-project that is being assembled to form a includes map. It contains a list of chapters from the original project, the list of preprocessors consists of an extended list of preprocessors (the path to which is passed through the `--ext-prep` argument) and the [includes preprocessor](https://foliant-docs.github.io/docs/preprocessors/includes/).
 
 - `markdown` – check md files for errors with markdownlint
     - `-v`, `-s`, `-c`, `-d`, `-a`, `-l`, `-f`, `-m`, `--foliant-config`
-- `urls` validate external links with markdown-link-check
+- `urls` – validate external links with markdown-link-check
     - `-v`, `-s`, `-d`, `-a`, `-l`
 - `print` print linting results
     - `-v`
-- `create-config` create markdownlint config for styleguide adherence
+- `create-config` – create markdownlint config for styleguide adherence
     - `-v`, `-s`, `-p`, `-d`, `-m`
+- `create-maps` – create source maps using `temp_project', without checking the linter
+    - `-v`, `-s`, `-d`, `--foliant-config`, `--ext-prep`
 
 `.markdownlintignore` – an exception file, each line of which can contain a glob.
 
