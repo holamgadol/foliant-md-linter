@@ -23,8 +23,8 @@
     "commander": "^9.5.0",
     "git-repo-name": "^1.0.1",
     "markdown-link-check": "~3.10.3",
-    "markdownlint-cli2": "^0.6.0",
-    "markdownlint-rules-foliant": "latest",
+    "markdownlint-cli2": "^0.18.1",
+    "markdownlint-rules-foliant": "github:holamgadol/markdownlint-foliant-rules#update-parser",
     "uuid": "^11.0.1"
   },
   "devDependencies": {
