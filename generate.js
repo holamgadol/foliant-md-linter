@@ -89,6 +89,13 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     MD051: false,
     MD052: true,
     MD053: false,
+    MD054: false,
+    MD055: false,
+    MD056: false,
+    MD057: false,
+    MD058: false,
+    MD059: false,
+    MD060: false,
     'indented-fence': true,
     'non-literal-fence-label': true,
     'fenced-code-in-quote': true,
@@ -136,6 +143,13 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     MD051: false,
     MD052: true,
     MD053: false,
+    MD054: false,
+    MD055: false,
+    MD056: false,
+    MD057: false,
+    MD058: false,
+    MD059: false,
+    MD060: false,
     'indented-fence': true,
     'non-literal-fence-label': true,
     'fenced-code-in-quote': true,
@@ -192,6 +206,13 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     MD051: false,
     MD052: false,
     MD053: false,
+    MD054: false,
+    MD055: false,
+    MD056: false,
+    MD057: false,
+    MD058: false,
+    MD059: false,
+    MD060: false,
     'indented-fence': false,
     'non-literal-fence-label': false,
     'fenced-code-in-quote': false,
@@ -239,18 +260,18 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     json.globs = listOfFiles
     content.push('// @ts-check\n\n"use strict";\n\n')
     if (json.config['validate-internal-links']) {
-      content.push("const path = require('path')")
-      content.push("const repoName = require('git-repo-name')")
+      content.push("import path from 'path';\nimport { fileURLToPath } from 'url';\nimport { createRequire } from 'module';")
+      content.push("const __filename = fileURLToPath(import.meta.url);\nconst __dirname = path.dirname(__filename);\nconst require = createRequire(import.meta.url);\n\nconst gitRepoName = require('git-repo-name');\nconst repoNameValue = gitRepoName.sync({ cwd: __dirname });")
     }
 
     content.push(`const json = ${JSON.stringify(json, null, 4)}`)
 
     if (json.config['validate-internal-links']) {
-      content.push('json.config[\'validate-internal-links\'].project = repoName.sync({cwd: __dirname})')
+      content.push('json.config[\'validate-internal-links\'].project = repoNameValue')
       content.push('json.config[\'validate-internal-links\'].workingDir = __dirname')
     }
 
-    content.push('\n\nmodule.exports = json')
+    content.push('\n\nexport default json;')
 
     try {
       fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.cjs'), content.join('\n'), { mode: 0o777 })
@@ -263,35 +284,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     // disabling globs used by the markdownlint extension
     configExist = initVSCodeSettings([])
 
-    const existPackageJSON = fs.existsSync('package.json')
-    if (existPackageJSON) {
-      const data = JSON.parse(fs.readFileSync('package.json'))
-      data.dependencies['git-repo-name'] = '^1.0.1'
-      data.dependencies['markdownlint-rules-foliant'] = 'latest'
-      try {
-        fs.writeFileSync('package.json', JSON.stringify(data, null, 2))
-      } catch (error) {
-        console.error(error)
-      }
-    } else {
-      // write package.json
-      const packageJSONforCJS = {
-        dependencies: {
-          'markdownlint-rules-foliant': 'latest',
-          'git-repo-name': '^1.0.1'
-        }
-      }
-      fs.writeFileSync(path.resolve(cwd, 'package.json'), JSON.stringify(packageJSONforCJS, null, 2), { mode: 0o777 })
-    }
-
-    // install dependencies
-    childProcess.execSync('npm i .', { stdio: [0, 1, 2] })
-
-    if (!existPackageJSON) {
-      // remove package.json
-      fs.rmSync(path.resolve(cwd, 'package.json'))
-      fs.rmSync(path.resolve(cwd, 'package-lock.json'))
-    }
+    makeNodeModules()
 
     if (configExist) {
       console.log(`${vscodeSettings} config updated successfully!`)
@@ -300,6 +293,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     }
   } else {
     const content = JSON.stringify({ customRules, config }, null, 4)
+    makeNodeModules()
 
     try {
       fs.writeFileSync(path.resolve(cwd, '.markdownlint-cli2.jsonc'), content, { mode: 0o777 })
@@ -308,6 +302,29 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
       process.exit(1)
     }
     console.log(`${mode} markdownlint config '.markdownlint-cli2.jsonc' created successfully!`)
+  }
+}
+
+function makeNodeModules() {
+  const existPackageJSON = fs.existsSync('package.json')
+  if (existPackageJSON) {
+    const data = JSON.parse(fs.readFileSync('package.json'))
+    data.dependencies['git-repo-name'] = '^1.0.1'
+    data.dependencies['markdownlint-rules-foliant'] = 'latest'
+    try {
+      fs.writeFileSync('package.json', JSON.stringify(data, null, 2))
+    } catch (error) {
+      console.error(error)
+    }
+  } else {
+    // write package.json
+    const packageJSONforCJS = {
+      dependencies: {
+        'markdownlint-rules-foliant': 'latest',
+        'git-repo-name': '^1.0.1'
+      }
+    }
+    fs.writeFileSync(path.resolve(cwd, 'package.json'), JSON.stringify(packageJSONforCJS, null, 2), { mode: 0o777 })
   }
 }
 
