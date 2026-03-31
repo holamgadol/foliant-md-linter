@@ -1,6 +1,6 @@
 {
   "name": "foliant-md-linter",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "description": "CLI tool for linting Foliant markdown sources",
   "license": "MIT",
   "homepage": "https://github.com/holamgadol/foliant-md-linter",
@@ -23,9 +23,10 @@
     "commander": "^9.5.0",
     "git-repo-name": "^1.0.1",
     "markdown-link-check": "~3.10.3",
-    "markdownlint-cli2": "^0.6.0",
-    "markdownlint-rules-foliant": "latest",
-    "uuid": "^11.0.1"
+    "markdownlint-cli2": "^0.21.0",
+    "markdownlint-rules-foliant": "github:holamgadol/markdownlint-foliant-rules#update-parser",
+    "uuid": "^11.0.1",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
