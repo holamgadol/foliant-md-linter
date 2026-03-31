@@ -263,7 +263,7 @@ const commandsGen = function (src = defaultSrc, configPath = '', project = '',
   markdownlintMode = 'slim', foliantConfig = defaultFoliantConfig,
   nodeModules = '', workinDir = '', isFix = false, debug = false, format = '', extendPrep = '') {
   const commands = {}
-  const fix = (isFix === true) ? '-fix' : ''
+  const fix = (isFix === true) ? ' --fix' : ''
   const args = []
   let filesArgMdLint = `"${src}/**/*.md"`
   let filesArgMdLinkCheck = (isWin === true) ? `${src}` : `${src}/`
