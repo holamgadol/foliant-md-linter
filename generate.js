@@ -267,7 +267,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
     if (existPackageJSON) {
       const data = JSON.parse(fs.readFileSync('package.json'))
       data.dependencies['git-repo-name'] = '^1.0.1'
-      data.dependencies['markdownlint-rules-foliant'] = 'latest'
+      data.dependencies['markdownlint-rules-foliant'] = '0.1.18'
       try {
         fs.writeFileSync('package.json', JSON.stringify(data, null, 2))
       } catch (error) {
@@ -277,7 +277,7 @@ function createConfig (mode = 'full', source = '', project = '', configPath = ''
       // write package.json
       const packageJSONforCJS = {
         dependencies: {
-          'markdownlint-rules-foliant': 'latest',
+          'markdownlint-rules-foliant': '0.1.18',
           'git-repo-name': '^1.0.1'
         }
       }
