@@ -1,44 +1,25 @@
 name: Publish to NPM
 
 on:
-  push:
-    branches:
-      - main
-  workflow_run:
-    workflows: ["Node CI"]
-    types: [completed]
+  release:
+    types: [published]
+
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
 
 jobs:
   publish:
-    name: Publish Package
     runs-on: ubuntu-latest
     environment: ci
-    permissions:
-      contents: read
-      packages: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: "20"
-
-      - name: Install dependencies
-        run: npm install --no-package-lock
-
-      - name: Run linter
-        run: npm run lint
-
-      - name: Run tests
-        run: npm test --runInBand
-
-      - name: Publish to NPM
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          check-version: true
-          tag: "latest"
-          dry-run: false
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm install --no-package-lock
+      - run: npm run lint
+      - run: npm test --runInBand
+      - run: npm publish
