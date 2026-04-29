@@ -24,7 +24,7 @@
     "git-repo-name": "^1.0.1",
     "markdown-link-check": "~3.10.3",
     "markdownlint-cli2": "^0.21.0",
-    "markdownlint-rules-foliant": "github:holamgadol/markdownlint-foliant-rules#update-parser",
+    "markdownlint-rules-foliant": "github:holamgadol/markdownlint-foliant-rules#fix-links-validation-bugs",
     "uuid": "^11.0.1",
     "yaml": "^2.8.2"
   },
